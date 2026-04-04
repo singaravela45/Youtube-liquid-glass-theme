@@ -1,4 +1,4 @@
-# 🚀 YouTube Pro +
+# 🚀 YouTube Pro Plus
 
 ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Google_Chrome-green.svg)
