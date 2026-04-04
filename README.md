@@ -3,7 +3,7 @@
   <h1> YouTube Pro Plus</h1>
 
   ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
-  ![Platform](https://img.shields.io/badge/platform-chromium_Chrome-green.svg)
+  ![Platform](https://img.shields.io/badge/platform-chromium_-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 </div>
 
