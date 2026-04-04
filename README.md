@@ -1,9 +1,9 @@
 <div align="center">
   <img src="imgs/logo.png" alt="YouTube Pro Plus Logo" width="150"/>
-  <h1>Youtube Pro Plus</h1>
+  <h1>🚀 YouTube Pro Plus</h1>
 
-  ![Version](https://img.shields.io/badge/version-1.2-blue.svg)
-  ![Platform](https://img.shields.io/badge/platform-Chromium-Browsers.svg)
+  ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
+  ![Platform](https://img.shields.io/badge/platform-Google_Chrome-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 </div>
 
@@ -12,6 +12,13 @@
 <div align="center">
   <img src="imgs/interface.png" alt="YouTube Pro Plus Interface" width="300"/>
 </div>
+
+---
+
+## 🎥 Watch it in Action
+Click the image below to watch the full showcase and installation guide on YouTube:
+
+[![YouTube Pro Plus Showcase](https://img.youtube.com/vi/cHCqhWl-Dwk/maxresdefault.jpg)](https://www.youtube.com/watch?v=cHCqhWl-Dwk)
 
 ---
 
