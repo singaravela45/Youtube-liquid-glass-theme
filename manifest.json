@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Youtube Pro +",
+  "version": "1.2",
+  "description": "Liquid Glass Theme, 10x Speed Booster, Audio Enhancer, Shorts Auto-Scroller, and Smart Download.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://ssvid.net/*",
+    "*://www.ssvid.net/*"
+  ],
+  "icons": {
+    "16": "imgs/icon16.png",
+    "32": "imgs/icon32.png",
+    "48": "imgs/icon48.png",
+    "128": "imgs/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "imgs/icon16.png",
+      "32": "imgs/icon32.png",
+      "48": "imgs/icon48.png",
+      "128": "imgs/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://ssvid.net/*", "*://www.ssvid.net/*"],
+      "js": ["inject-download.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["theme.css", "inject-speed.js", "inject-audio.js"],
+      "matches": ["*://*.youtube.com/*"]
+    }
+  ]
+}
