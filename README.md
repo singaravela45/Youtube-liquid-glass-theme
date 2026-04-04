@@ -1,10 +1,18 @@
-# 🚀 YouTube Pro Plus
+<div align="center">
+  <img src="imgs/logo.png" alt="YouTube Pro Plus Logo" width="150"/>
+  <h1>![YoutubeLogoGIF](https://github.com/user-attachments/assets/98dc5123-3827-4c92-a413-b528de58a9fb)
+  Pro Plus</h1>
 
-![Version](https://img.shields.io/badge/version-1.0-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Google_Chrome-green.svg)
-![License](https://img.shields.io/badge/license-MIT-yellow.svg)
+  ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
+  ![Platform](https://img.shields.io/badge/platform-Google_Chrome-green.svg)
+  ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
+</div>
 
-**YouTube Pro +** is an all-in-one, highly optimized extension designed to completely overhaul your YouTube experience. It make your life so smooth with useful features and stylish  theme all into one centralized, lightweight extension with a beautiful **Liquid Glass** UI.
+**YouTube Pro +** is an all-in-one, highly optimized extension designed to completely overhaul your YouTube experience. It makes your life so smooth with useful features and a stylish theme all into one centralized, lightweight extension with a beautiful **Liquid Glass** UI.
+
+<div align="center">
+  <img src="imgs/interface.png" alt="YouTube Pro Plus Interface" width="300"/>
+</div>
 
 ---
 
@@ -18,10 +26,10 @@
     * Up to **300% Volume Boost**.
     * Custom **3-Band Equalizer** (Lows, Mids, Highs).
     * Built-in presets (Bass Boost, Clear Vocals).
-    * Live audio visualizer with a anime dancing GIF.
+    * Live audio visualizer with an anime dancing GIF.
     * *Quick Access:* Press `Alt + Q` while watching a video to instantly open the audio panel.
 * **🔁 Shorts Auto-Scroller:** A robust background script that intelligently detects when a YouTube Short finishes and automatically scrolls to the next one—completely hands-free.
-* **⬇️ Smart Download:** A smart third party download support added replacing the default download button .(if you want to use the normal download then just turn off the setting in extension ).
+* **⬇️ Smart Download:** A smart third-party download support added replacing the default download button (if you want to use the normal download then just turn off the setting in the extension).
 
 ---
 
@@ -53,8 +61,8 @@ Since this extension is in Developer Mode, you can install it locally in just a 
 * `theme.css` - The master stylesheet for the Liquid Glass UI.
 * `inject-speed.js` - Bypasses the YouTube player to unlock 10x speed.
 * `inject-audio.js` - Hooks into the Web Audio API for the volume booster and custom EQ.
-* `inject-download.js` - Third party downloader website support and automation of the process .
-* `/imgs/` - Contains the custom extension icons (16px, 32px, 48px, 128px).
+* `inject-download.js` - Third-party downloader website support and automation of the process.
+* `/imgs/` - Contains the custom extension icons and README graphics.
 
 ---
 
