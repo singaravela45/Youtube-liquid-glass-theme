@@ -3,7 +3,7 @@
   <h1> YouTube Pro Plus</h1>
 
   ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
-  ![Platform](https://img.shields.io/badge/platform-chromium_-green.svg)
+  ![Platform](https://img.shields.io/badge/platform-Chromium%20%7C%20Firefox-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 </div>
 
@@ -12,6 +12,15 @@
 <div align="center">
   <img src="imgs/interface.png" alt="YouTube Pro Plus Interface" width="300"/>
 </div>
+
+---
+
+## 📥 Download
+
+<a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pro-plus/"><img src="https://addons.mozilla.org/static/img/addons-buttons/AMO-button_1.png" alt="Get the Add-on for Firefox" height="54"/></a>
+<a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip"><img src="https://img.shields.io/badge/Download_ZIP-100000?style=for-the-badge&logo=github&logoColor=white&labelColor=101010" alt="Download ZIP" height="54"/></a>
+
+> **Note:** Currently available officially on the Firefox Add-ons store. For Chrome, Edge, and Opera users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below.
 
 ---
 
@@ -39,14 +48,14 @@ Click the image below to watch the full showcase and installation guide on YouTu
 
 ---
 
-## 🛠️ Installation
+## 🛠️ Local Installation (Chrome, Edge, Opera)
 
-Since this extension is in Developer Mode, you can install it locally in just a few seconds:
+Since the extension is currently pending store approvals for Chromium browsers, you can install it locally in Developer Mode in just a few seconds:
 
-1.  **Download the repository:** Click the green `Code` button and select `Download ZIP`, then extract the folder to your computer.
-2.  **Open Extensions:** Open Google Chrome and type `chrome://extensions/` in the URL bar.
+1.  **Download the Extension:** Click the **Download ZIP** button in the downloads section above and extract the folder to your computer.
+2.  **Open Extensions:** Open your browser and type `chrome://extensions/` (or `edge://extensions/` / `opera://extensions/`) in the URL bar.
 3.  **Enable Developer Mode:** Toggle the **"Developer mode"** switch in the top right corner of the page.
-4.  **Load the Extension:** Click the **"Load unpacked"** button in the top left and select the extracted `Youtube Pro +` folder.
+4.  **Load the Extension:** Click the **"Load unpacked"** button in the top left and select the extracted `Youtube-Pro-Plus-main` folder.
 5.  *Important:* Make sure to disable any conflicting Tampermonkey scripts or Stylus themes! 
 6.  **Refresh YouTube** and enjoy!
 
@@ -54,7 +63,7 @@ Since this extension is in Developer Mode, you can install it locally in just a 
 
 ## 🖥️ Usage
 
-* **Main Settings:** Click the `YouTube Pro +` extension icon in your Chrome toolbar to open the Liquid Glass settings popup. From here, you can toggle every single feature on or off in real-time.
+* **Main Settings:** Click the `YouTube Pro +` extension icon in your toolbar to open the Liquid Glass settings popup. From here, you can toggle every single feature on or off in real-time.
 * **Audio Enhancer:** Click the "Open Audio Panel" button in the extension popup, or simply press **`Alt + Q`** on your keyboard to bring up the equalizer overlay.
 
 ---
