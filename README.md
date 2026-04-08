@@ -17,8 +17,12 @@
 
 ## 📥 Download
 
-<a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pro-plus/"><img src="https://addons.mozilla.org/static/img/addons-buttons/AMO-button_1.png" alt="Get the Add-on for Firefox" height="54"/></a>
-<a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip"><img src="https://img.shields.io/badge/Download_ZIP-100000?style=for-the-badge&logo=github&logoColor=white&labelColor=101010" alt="Download ZIP" height="54"/></a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pro-plus/">
+  <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Get the Add-on for Firefox" height="56">
+</a>
+<a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip">
+  <img src="https://img.shields.io/badge/Download_ZIP-101010?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" height="56">
+</a>
 
 > **Note:** Currently available officially on the Firefox Add-ons store. For Chrome, Edge, and Opera users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below.
 
