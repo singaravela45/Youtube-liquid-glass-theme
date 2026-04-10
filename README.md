@@ -87,13 +87,18 @@ Since the extension is currently pending store approvals for Chromium browsers, 
 
 ## ⚠️ Disclaimer
 
-This extension modifies YouTube's native DOM and playback variables. If YouTube updates their interface, some features (like the Shorts Scroller or Speed Booster) may temporarily stop working until the selectors are updated in the code. 
+This extension modifies YouTube's native DOM and playback variables. If YouTube updates their interface, some features (like the Shorts Scroller or Speed Booster) may temporarily stop working until the selectors are updated in the code.
 
 **Note on Audio Boosting:** Heavily boosting the "Lows" on the equalizer while at 300% volume may cause audio distortion depending on your hardware. It is recommended to keep the master volume at 100% when heavily boosting bass.
 
 ---
 
-**No License:** Copyright © 2026 Archimetrix. All Rights Reserved.
+## ⚖️ License & Copyright
 
-This repository and its contents are proprietary. You may not copy, reproduce, distribute, publish, display, perform, modify, create derivative works, transmit, or in any way exploit any such content, nor may you distribute any part of this content over any network, including a local area network, sell or offer it for sale, or use such content to construct any kind of database. The previous MIT license has been revoked for all future versions and commits.
+**Copyright © 2026 Archimetrix (Md Jubayer). All Rights Reserved.**
+
+> This repository and its contents are proprietary. You may not copy, reproduce, distribute, publish, display, perform, modify, create derivative works, transmit, or in any way exploit any such content, nor may you distribute any part of this content over any network, including a local area network, sell or offer it for sale, or use such content to construct any kind of database. 
+>
+> *The previous MIT license has been revoked for all future versions and commits.*
+
 ---
