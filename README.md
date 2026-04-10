@@ -93,5 +93,3 @@ This extension modifies YouTube's native DOM and playback variables. If YouTube 
 
 ---
 
-### 📝 License
-This project is open-source and available under the MIT License. Feel free to fork, modify, and improve!
