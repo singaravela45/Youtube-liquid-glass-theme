@@ -1,0 +1,87 @@
+{
+  "manifest_version": 3,
+  "name": "Youtube Pro +",
+  "version": "1.5",
+  "description": "Liquid Glass Theme, 10x Speed Booster, Music Enhancer, Shorts Auto-Scroller, Smart Download, and Auto Fullscreen.",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "*://www.youtube.com/*",
+    "*://youtube.com/*",
+    "*://ssvid.net/*",
+    "*://www.ssvid.net/*"
+  ],
+  "icons": {
+    "16": "imgs/icon16.png",
+    "32": "imgs/icon32.png",
+    "48": "imgs/icon48.png",
+    "128": "imgs/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "imgs/icon16.png",
+      "32": "imgs/icon32.png",
+      "48": "imgs/icon48.png",
+      "128": "imgs/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.youtube.com/*",
+        "*://youtube.com/*"
+      ],
+      "js": [
+        "browser-compat.js",
+        "content.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://www.youtube.com/*",
+        "*://youtube.com/*"
+      ],
+      "js": [
+        "browser-compat.js",
+        "music-enhancer.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://ssvid.net/*",
+        "*://www.ssvid.net/*"
+      ],
+      "js": [
+        "browser-compat.js",
+        "inject-download.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "theme.css",
+        "block-popups.css",
+        "inject-speed.js",
+        "dancing.mp4",
+        "imgs/me-logo48.png"
+      ],
+      "matches": [
+        "*://www.youtube.com/*",
+        "*://youtube.com/*"
+      ]
+    }
+  ]
+}
