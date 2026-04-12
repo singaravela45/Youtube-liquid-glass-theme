@@ -3,7 +3,7 @@
   <h1> YouTube Pro Plus</h1>
 
   ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
-  ![Platform](https://img.shields.io/badge/platform-Chromium%20%7C%20Firefox-green.svg)
+  ![Platform](https://img.shields.io/badge/platform-Firefox%20(Chromium%20Deprecated)-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 </div>
 
@@ -12,6 +12,13 @@
 <div align="center">
   <img src="imgs/interface.png" alt="YouTube Pro Plus Interface" width="300"/>
 </div>
+
+---
+
+> ⚠️ **IMPORTANT BROWSER SUPPORT NOTICE** ⚠️
+> As this project will become increasingly complex in the future, maintaining both Firefox and Chrome/Chromium versions simultaneously is no longer possible. **Moving forward, only the Firefox version will receive new features and bug fixes.**
+> 
+> For the best performance and continued support, we strongly recommend switching to **Firefox** or Firefox-based browsers (such as **Floorp**, **Waterfox**, or **LibreWolf**).
 
 ---
 
@@ -24,7 +31,7 @@
   <img src="https://img.shields.io/badge/Download_ZIP-101010?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" height="56">
 </a>
 
-> **Note:** Currently available officially on the Firefox Add-ons store. For Chrome, Edge, and Opera users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below.
+> **Note:** Currently available officially on the Firefox Add-ons store. For legacy Chrome, Edge, and Opera users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below (Note: Chromium versions are no longer actively updated).
 
 ---
 
@@ -54,7 +61,7 @@ Click the image below to watch the full showcase and installation guide on YouTu
 
 ## 🛠️ Local Installation (Chrome, Edge, Opera)
 
-Since the extension is currently pending store approvals for Chromium browsers, you can install it locally in Developer Mode in just a few seconds:
+Since the extension is currently pending store approvals for Chromium browsers (and is now considered legacy), you can install the latest stable Chromium build locally in Developer Mode in just a few seconds:
 
 1.  **Download the Extension:** Click the **Download ZIP** button in the downloads section above and extract the folder to your computer.
 2.  **Open Extensions:** Open your browser and type `chrome://extensions/` (or `edge://extensions/` / `opera://extensions/`) in the URL bar.
@@ -97,8 +104,4 @@ This extension modifies YouTube's native DOM and playback variables. If YouTube 
 
 **Copyright © 2026 Archimetrix. All Rights Reserved.**
 
-> This repository and its contents are proprietary. You may not copy, reproduce, distribute, publish, display, perform, modify, create derivative works, transmit, or in any way exploit any such content, nor may you distribute any part of this content over any network, including a local area network, sell or offer it for sale, or use such content to construct any kind of database. 
-
-
-
----
+> This repository and its contents are proprietary. You may not copy, reproduce, distribute, publish, display, perform, modify, create derivative works, transmit, or in any way exploit any such content, nor may you distribute any part of this content over any network, including a local area network, sell or offer it for sale, or use such content to construct any kind of database.
