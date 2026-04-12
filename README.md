@@ -18,7 +18,7 @@
 > ⚠️ **IMPORTANT BROWSER SUPPORT NOTICE** ⚠️
 > As this project will become increasingly complex in the future, maintaining both Firefox and Chrome/Chromium versions simultaneously is no longer possible. **Moving forward, only the Firefox version will receive new features and bug fixes.**
 > 
-> For the best performance and continued support, we strongly recommend switching to **Firefox** or Firefox-based browsers (such as **Floorp**, **Waterfox**, or **LibreWolf**).
+> For the best performance and continued support, we strongly recommend switching to **Firefox** or Firefox-based browsers (such as **Floorp**, **Waterfox**,**Zen** or **LibreWolf**).
 
 ---
 
