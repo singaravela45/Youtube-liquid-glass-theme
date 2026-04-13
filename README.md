@@ -3,7 +3,7 @@
   <h1> YouTube Pro Plus</h1>
 
   ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
-  ![Platform](https://img.shields.io/badge/platform-Firefox%20(Chromium%20Deprecated)-green.svg)
+  ![Platform](https://img.shields.io/badge/platform-Firefox%20%7C%20Edge%20%7C%20Chromium-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 </div>
 
@@ -15,23 +15,19 @@
 
 ---
 
-> ⚠️ **IMPORTANT BROWSER SUPPORT NOTICE** ⚠️
-> As this project will become increasingly complex in the future, maintaining both Firefox and Chrome/Chromium versions simultaneously is no longer possible. **Moving forward, only the Firefox version will receive new features and bug fixes.**
-> 
-> For the best performance and continued support, we strongly recommend switching to **Firefox** or Firefox-based browsers (such as **Floorp**, **Waterfox**,**Zen** or **LibreWolf**).
-
----
-
 ## 📥 Download
 
 <a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pro-plus/">
   <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Get the Add-on for Firefox" height="56">
 </a>
+<a href="https://microsoftedge.microsoft.com/addons/detail/youtube-pro-/miocgpalllinpiheblbpnpflpapgohmi">
+  <img src="https://img.shields.io/badge/Get_it_on-Edge_Add--ons-0078D7?style=for-the-badge&logo=microsoft-edge&logoColor=white" alt="Get the Add-on for Edge" height="56">
+</a>
 <a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip">
   <img src="https://img.shields.io/badge/Download_ZIP-101010?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" height="56">
 </a>
 
-> **Note:** Currently available officially on the Firefox Add-ons store. For legacy Chrome, Edge, and Opera users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below (Note: Chromium versions are no longer actively updated).
+> **Note:** Currently available officially on the Firefox and Microsoft Edge Add-ons stores. For Chrome, Opera, and other Chromium users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below.
 
 ---
 
@@ -59,12 +55,12 @@ Click the image below to watch the full showcase and installation guide on YouTu
 
 ---
 
-## 🛠️ Local Installation (Chrome, Edge, Opera)
+## 🛠️ Local Installation (Chrome, Opera, Brave)
 
-Since the extension is currently pending store approvals for Chromium browsers (and is now considered legacy), you can install the latest stable Chromium build locally in Developer Mode in just a few seconds:
+For users on other Chromium browsers where the extension is not yet in the store, you can install the latest stable build locally in Developer Mode in just a few seconds:
 
 1.  **Download the Extension:** Click the **Download ZIP** button in the downloads section above and extract the folder to your computer.
-2.  **Open Extensions:** Open your browser and type `chrome://extensions/` (or `edge://extensions/` / `opera://extensions/`) in the URL bar.
+2.  **Open Extensions:** Open your browser and type `chrome://extensions/` (or `opera://extensions/` / `brave://extensions/`) in the URL bar.
 3.  **Enable Developer Mode:** Toggle the **"Developer mode"** switch in the top right corner of the page.
 4.  **Load the Extension:** Click the **"Load unpacked"** button in the top left and select the extracted `Youtube-Pro-Plus-main` folder.
 5.  *Important:* Make sure to disable any conflicting Tampermonkey scripts or Stylus themes! 
