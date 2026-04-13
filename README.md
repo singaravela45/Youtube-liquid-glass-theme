@@ -17,15 +17,17 @@
 
 ## 📥 Download
 
-<a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pro-plus/">
-  <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Get the Add-on for Firefox" height="56">
-</a>
-<a href="https://microsoftedge.microsoft.com/addons/detail/youtube-pro-/miocgpalllinpiheblbpnpflpapgohmi">
-  <img src="https://img.shields.io/badge/Get_it_on-Microsoft_Edge-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Get it on Microsoft Edge" height="56">
-</a>
-<a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip">
-  <img src="https://img.shields.io/badge/Download_ZIP-101010?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" height="56">
-</a>
+<p float="left">
+  <a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pro-plus/" target="_blank">
+    <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Get the Add-on for Firefox" height="56">
+  </a>
+  <a href="https://microsoftedge.microsoft.com/addons/detail/youtube-pro-/miocgpalllinpiheblbpnpflpapgohmi" target="_blank">
+    <img src="https://github.com/user-attachments/assets/9fcd04a5-3d1c-43d2-9253-d3e2b9510030" alt="Get it from Microsoft Edge" height="56">
+  </a>
+  <a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip" target="_blank">
+    <img src="https://img.shields.io/badge/Download_ZIP-101010?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" height="56">
+  </a>
+</p>
 
 > **Note:** Currently available officially on the Firefox and Microsoft Edge Add-ons stores. For Chrome, Opera, and other Chromium users, please use the **Download ZIP** button above and follow the quick **Local Installation** guide below.
 
