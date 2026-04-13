@@ -21,7 +21,7 @@
   <img src="https://blog.mozilla.org/addons/files/2020/04/get-the-addon-fx-apr-2020.svg" alt="Get the Add-on for Firefox" height="56">
 </a>
 <a href="https://microsoftedge.microsoft.com/addons/detail/youtube-pro-/miocgpalllinpiheblbpnpflpapgohmi">
-  <img src="https://img.shields.io/badge/Get_it_on-Edge_Add--ons-0078D7?style=for-the-badge&logo=microsoft-edge&logoColor=white" alt="Get the Add-on for Edge" height="56">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f6/Get_it_from_Microsoft_Badge.svg" alt="Get it from Microsoft" height="56">
 </a>
 <a href="https://github.com/Archimetrix/Youtube-Pro-Plus/archive/refs/heads/main.zip">
   <img src="https://img.shields.io/badge/Download_ZIP-101010?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" height="56">
