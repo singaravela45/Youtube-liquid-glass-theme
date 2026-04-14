@@ -92,6 +92,7 @@ For users on other Chromium browsers where the extension is not yet in the store
 ## ⚠️ Disclaimer
 
 This extension modifies YouTube's native DOM and playback variables. If YouTube updates their interface, some features (like the Shorts Scroller or Speed Booster) may temporarily stop working until the selectors are updated in the code.
+The download feature is completely dependent on third party websites so it can stop working at anytime . If any error issues is there kindly raise a issue in github .
 
 **Note on Audio Boosting:** Heavily boosting the "Lows" on the equalizer while at 300% volume may cause audio distortion depending on your hardware. It is recommended to keep the master volume at 100% when heavily boosting bass.
 
