@@ -1,3 +1,8 @@
+// ─── Chrome MV3: import compat shim before anything else ─────────────────────
+// In Firefox the manifest lists multiple background scripts; Chrome only allows
+// a single service_worker entry, so we pull the shim in via importScripts().
+importScripts('browser-compat.js');
+
 // ─── YouTube Pro + Background Service Worker ─────────────────────────────────
 // Handles the "Auto Fullscreen on YouTube" feature.
 // Enters fullscreen when a YouTube tab is active; exits when switching away.
@@ -25,12 +30,15 @@ async function isFullscreenEnabled() {
     });
 }
 
+// Firefox restricts programmatic fullscreen via the windows API (security policy).
+// We attempt fullscreen and silently fall back to maximized if it is blocked.
 async function goFullscreen(windowId) {
     if (fullscreenedWindows.has(windowId)) return;
     fullscreenedWindows.add(windowId);
     try {
         await chrome.windows.update(windowId, { state: 'maximized' });
-        await chrome.windows.update(windowId, { state: 'fullscreen' });
+        // Firefox may reject 'fullscreen' state — catch and stay maximized
+        await chrome.windows.update(windowId, { state: 'fullscreen' }).catch(() => {});
     } catch (e) {
         fullscreenedWindows.delete(windowId);
     }
@@ -41,8 +49,8 @@ async function exitFullscreen(windowId) {
     fullscreenedWindows.delete(windowId);
     try {
         const win = await chrome.windows.get(windowId).catch(() => null);
-        if (win && win.state === 'fullscreen') {
-            await chrome.windows.update(windowId, { state: 'maximized' });
+        if (win && (win.state === 'fullscreen' || win.state === 'maximized')) {
+            await chrome.windows.update(windowId, { state: 'normal' }).catch(() => {});
         }
     } catch (e) {}
 }
@@ -54,8 +62,8 @@ async function exitAllFullscreen() {
     for (const windowId of ids) {
         try {
             const win = await chrome.windows.get(windowId).catch(() => null);
-            if (win && win.state === 'fullscreen') {
-                await chrome.windows.update(windowId, { state: 'maximized' });
+            if (win && (win.state === 'fullscreen' || win.state === 'maximized')) {
+                await chrome.windows.update(windowId, { state: 'normal' }).catch(() => {});
             }
         } catch (e) {}
     }
