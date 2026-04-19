@@ -147,8 +147,10 @@
     .me-gate-star-btn{width:100%;padding:11px 0;border:none;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,#f6c90e,#f59500);color:#1a0e00;font-size:12px;font-weight:800;letter-spacing:.5px;transition:all .22s;box-shadow:0 4px 20px rgba(246,201,14,.35);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
     .me-gate-star-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(246,201,14,.55);filter:brightness(1.08)}
     .me-gate-star-btn:active{transform:translateY(0) scale(.97)}
-    .me-gate-done-btn{width:100%;padding:9px 0;border:none;border-radius:13px;cursor:pointer;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.45);font-size:10.5px;font-weight:700;letter-spacing:.3px;transition:all .22s}
-    .me-gate-done-btn:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:#00d4ff}
+    .me-gate-done-btn{width:100%;padding:9px 0;border:none;border-radius:13px;cursor:pointer;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.45);font-size:10.5px;font-weight:700;letter-spacing:.3px;transition:all .22s;display:none}
+    .me-gate-done-btn.visible{display:block}
+    .me-gate-done-btn:disabled{opacity:.4;cursor:not-allowed}
+    .me-gate-done-btn:not(:disabled):hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:#00d4ff}
     .me-gate-note{font-size:8px;color:rgba(255,255,255,.2);text-align:center;margin-top:10px;line-height:1.4}
     .me-footer{position:relative;z-index:1;text-align:center;padding:7px 12px 10px;border-top:1px solid rgba(255,255,255,.06);font-size:9px;color:rgba(255,255,255,.28);letter-spacing:.2px}
     .me-footer span{color:rgba(255,100,100,.65)}
@@ -353,6 +355,26 @@
 
     document.getElementById('me-gate-star-btn').onclick = () => {
       window.open(GITHUB_URL, '_blank');
+
+      // Show the done button and start a 5-second countdown
+      const doneBtn = document.getElementById('me-gate-done-btn');
+      doneBtn.classList.add('visible');
+      doneBtn.disabled = true;
+
+      let secs = 5;
+      const originalText = "I\u2019ve Starred it! \u2192 Open Music Enhancer";
+      doneBtn.textContent = `Please wait ${secs}s\u2026`;
+
+      const tick = setInterval(() => {
+        secs--;
+        if (secs > 0) {
+          doneBtn.textContent = `Please wait ${secs}s\u2026`;
+        } else {
+          clearInterval(tick);
+          doneBtn.disabled = false;
+          doneBtn.textContent = originalText;
+        }
+      }, 1000);
     };
 
     document.getElementById('me-gate-done-btn').onclick = () => {

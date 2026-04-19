@@ -1,21 +1,23 @@
-// ── Pause video when popup opens, resume when it closes ──────────────────────
-(function () {
-    function sendToActiveYouTubeTab(action) {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            const tab = tabs && tabs[0];
-            if (!tab) return;
-            const url = tab.url || '';
-            if (!url.includes('youtube.com')) return;
-            chrome.tabs.sendMessage(tab.id, { action }).catch?.(() => {});
-        });
-    }
-    // Pause as soon as the popup DOM is ready
-    document.addEventListener('DOMContentLoaded', () => sendToActiveYouTubeTab('popupOpened'), { once: true });
-    // Resume when the popup window is about to close
-    window.addEventListener('unload', () => sendToActiveYouTubeTab('popupClosed'), { once: true });
-})();
-
 document.addEventListener('DOMContentLoaded', () => {
+    // ── Popup open/close video pause ────────────────────────────────────────
+    // Cache the YouTube tab ID so we can send the resume message reliably
+    // inside the pagehide handler (where async queries aren't possible).
+    let _ytTabId = null;
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0] && tabs[0].url && tabs[0].url.includes('youtube.com')) {
+            _ytTabId = tabs[0].id;
+            chrome.tabs.sendMessage(_ytTabId, { action: 'pauseForPopup' });
+        }
+    });
+
+    // pagehide fires reliably when the extension popup is closed by the user
+    window.addEventListener('pagehide', () => {
+        if (_ytTabId !== null) {
+            chrome.tabs.sendMessage(_ytTabId, { action: 'resumeAfterPopup' });
+        }
+    });
+
     const toggles = ['theme', 'premium', 'ambient', 'speed', 'audio', 'autoscroll', 'download', 'fullscreen', 'autoResume'];
     const masterToggleBtn = document.getElementById('master-toggle');
 
@@ -155,12 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadResumeHistory() {
         chrome.storage.local.get(['ytProVideos', 'resumeSettings'], (data) => {
-            const settings = data.resumeSettings || { deleteAfter: 730 };
+            const settings = data.resumeSettings || { deleteAfter: 0 };
             const now = Date.now();
             allVideos = (data.ytProVideos || []).filter(v => {
                 if (!v.timestamp) return true;
+                if (!settings.deleteAfter) return true; // 0 = Never
                 const daysDiff = Math.round((now - v.timestamp) / 86400000);
-                return daysDiff <= (settings.deleteAfter || 730);
+                return daysDiff <= settings.deleteAfter;
             }).reverse(); // Most recent first
             renderVideoList('');
         });
@@ -186,6 +189,91 @@ document.addEventListener('DOMContentLoaded', () => {
         return groups;
     }
 
+    // ── Virtual scroll constants ──────────────────────────────────────────
+    const VS_CARD_HEIGHT   = 78;  // card: 56px thumb + padding + margin
+    const VS_HEADER_HEIGHT = 30;  // date group header
+    const VS_BUFFER        = 6;   // extra items above/below viewport
+
+    let vsItems     = [];
+    let vsScrollRAF = null;
+
+    function buildFlatItems(filtered, useGroups) {
+        const items = [];
+        if (!useGroups) {
+            filtered.forEach(v => items.push({ type: 'card', video: v }));
+        } else {
+            const groups = groupVideosByDate(filtered);
+            ['Today', 'Yesterday', 'This Week', 'This Month', 'Older'].forEach(groupName => {
+                if (!groups[groupName].length) return;
+                items.push({ type: 'header', label: groupName });
+                groups[groupName].forEach(v => items.push({ type: 'card', video: v }));
+            });
+        }
+        return items;
+    }
+
+    function vsItemHeight(item) {
+        return item.type === 'header' ? VS_HEADER_HEIGHT : VS_CARD_HEIGHT;
+    }
+
+    function vsTotalHeight(items) {
+        return items.reduce((sum, item) => sum + vsItemHeight(item), 0);
+    }
+
+    function vsFirstVisibleIndex(items, scrollTop) {
+        let y = 0;
+        for (let i = 0; i < items.length; i++) {
+            const h = vsItemHeight(items[i]);
+            if (y + h > scrollTop) return i;
+            y += h;
+        }
+        return items.length - 1;
+    }
+
+    function vsOffsetOf(items, index) {
+        let y = 0;
+        for (let i = 0; i < index; i++) y += vsItemHeight(items[i]);
+        return y;
+    }
+
+    function renderVisibleItems() {
+        if (!vsItems.length) return;
+        const scrollTop  = rpList.scrollTop;
+        const viewHeight = rpList.clientHeight || 450;
+        const startIdx   = Math.max(0, vsFirstVisibleIndex(vsItems, scrollTop) - VS_BUFFER);
+        const endIdx     = Math.min(vsItems.length - 1, vsFirstVisibleIndex(vsItems, scrollTop + viewHeight) + VS_BUFFER);
+
+        const topPad    = vsOffsetOf(vsItems, startIdx);
+        const bottomPad = vsTotalHeight(vsItems) - vsOffsetOf(vsItems, endIdx + 1);
+
+        const spacerTop    = rpList.querySelector('.vs-spacer-top');
+        const spacerBottom = rpList.querySelector('.vs-spacer-bottom');
+
+        // Remove rendered items, keep spacers
+        Array.from(rpList.children).forEach(child => {
+            if (!child.classList.contains('vs-spacer-top') && !child.classList.contains('vs-spacer-bottom')) {
+                child.remove();
+            }
+        });
+
+        spacerTop.style.height    = topPad    + 'px';
+        spacerBottom.style.height = bottomPad + 'px';
+
+        const frag = document.createDocumentFragment();
+        for (let i = startIdx; i <= endIdx; i++) {
+            const item = vsItems[i];
+            if (item.type === 'header') {
+                const hdr = document.createElement('div');
+                hdr.className   = 'rp-date-header';
+                hdr.textContent = item.label;
+                frag.appendChild(hdr);
+            } else {
+                frag.appendChild(buildVideoCard(item.video));
+            }
+        }
+        spacerTop.after(frag);
+    }
+
     function renderVideoList(query) {
         const filtered = query
             ? allVideos.filter(v =>
@@ -199,24 +287,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="rp-empty-icon">📭</span>
                     ${query ? 'No results found.' : 'No watch history yet.<br>Start watching a YouTube video to build your history!'}
                 </div>`;
+            vsItems = [];
             return;
         }
 
-        rpList.innerHTML = '';
+        vsItems = buildFlatItems(filtered, !query);
+        rpList.innerHTML = '<div class="vs-spacer-top" style="height:0"></div><div class="vs-spacer-bottom" style="height:0"></div>';
+        renderVisibleItems();
 
-        if (query) {
-            filtered.forEach(video => rpList.appendChild(buildVideoCard(video)));
-        } else {
-            const groups = groupVideosByDate(filtered);
-            ['Today', 'Yesterday', 'This Week', 'This Month', 'Older'].forEach(groupName => {
-                if (!groups[groupName].length) return;
-                const hdr = document.createElement('div');
-                hdr.className = 'rp-date-header';
-                hdr.textContent = groupName;
-                rpList.appendChild(hdr);
-                groups[groupName].forEach(video => rpList.appendChild(buildVideoCard(video)));
-            });
-        }
+        rpList.onscroll = () => {
+            if (vsScrollRAF) cancelAnimationFrame(vsScrollRAF);
+            vsScrollRAF = requestAnimationFrame(renderVisibleItems);
+        };
     }
 
     function buildVideoCard(video) {
@@ -233,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.target      = '_blank';
         card.title       = video.title || '';
 
+        const wCount = video.watchCount || 1;
         card.innerHTML = `
             <img class="rp-thumb" src="${thumbUrl}" alt="" loading="lazy">
             <div class="rp-info">
@@ -246,7 +329,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="rp-duration">${durStr}</span>
                 </div>
             </div>
-            <button class="rp-delete-btn" data-id="${watchId}" title="Remove">✕</button>
+            <div class="rp-right-col">
+                <span class="rp-watch-count" title="Times played">${wCount}×</span>
+                <button class="rp-delete-btn" data-id="${watchId}" title="Remove">✕</button>
+            </div>
             <div class="rp-progress-wrap">
                 <div class="rp-progress-bar" style="width:${(progress * 100).toFixed(1)}%;${isComplete ? 'background:#4caf50;' : ''}"></div>
             </div>`;
@@ -256,9 +342,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             e.stopPropagation();
             deleteVideo(watchId);
-            card.remove();
             allVideos = allVideos.filter(v => extractWatchID(v.videolink) !== watchId);
-            if (rpList.children.length === 0) renderVideoList('');
+            vsItems   = vsItems.filter(item => !(item.type === 'card' && extractWatchID(item.video.videolink) === watchId));
+            if (!allVideos.length) { renderVideoList(''); return; }
+            renderVisibleItems();
         });
 
         return card;
@@ -360,13 +447,19 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.local.get('resumeSettings', (data) => {
             const s = data.resumeSettings || {
                 pauseResume: false, minWatchTime: 60,
-                minVideoLength: 120, markPlayedTime: 10, deleteAfter: 730
+                minVideoLength: 120, markPlayedTime: 10, deleteAfter: 0
             };
             document.getElementById('rsp-pause-toggle').checked = !s.pauseResume;
             document.getElementById('rsp-min-length').value     = Math.round(s.minVideoLength / 60);
             document.getElementById('rsp-min-watch').value      = Math.round(s.minWatchTime / 60);
             document.getElementById('rsp-mark-played').value    = s.markPlayedTime;   // seconds, not minutes
-            document.getElementById('rsp-delete-after').value   = s.deleteAfter || 730;
+            // Snap stored value to nearest dropdown option (handles old arbitrary day values)
+            const storedDays = s.deleteAfter !== undefined ? s.deleteAfter : 0;
+            const options = [180, 365, 1095, 0];
+            const closest = options.reduce((prev, curr) =>
+                Math.abs(curr - storedDays) < Math.abs(prev - storedDays) ? curr : prev
+            );
+            document.getElementById('rsp-delete-after').value = closest;
         });
         resumeSettingsPanel.classList.add('visible');
         document.getElementById('rsp-saved-msg').classList.remove('show');
@@ -374,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('rsp-back-btn').addEventListener('click', () => {
         resumeSettingsPanel.classList.remove('visible');
+        loadResumeHistory(); // Always reload from storage when returning to list
     });
 
     document.getElementById('rsp-save-btn').addEventListener('click', () => {
@@ -382,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
             minVideoLength: parseInt(document.getElementById('rsp-min-length').value || 2) * 60,
             minWatchTime:   parseInt(document.getElementById('rsp-min-watch').value  || 1) * 60,
             markPlayedTime: parseInt(document.getElementById('rsp-mark-played').value || 10), // already in seconds
-            deleteAfter:    parseInt(document.getElementById('rsp-delete-after').value || 730)
+            deleteAfter:    parseInt(document.getElementById('rsp-delete-after').value, 10)
         };
         chrome.storage.local.set({ resumeSettings: newSettings }, () => {
             const msg = document.getElementById('rsp-saved-msg');
@@ -391,12 +485,76 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ── Backup & Restore ────────────────────────────────────────────────────
+    document.getElementById('rsp-backup-btn').addEventListener('click', () => {
+        chrome.storage.local.get(['ytProVideos', 'resumeSettings'], (data) => {
+            // Sort oldest-first — matches internal storage order (loadResumeHistory reverses to show newest first)
+            const sortedVideos = (data.ytProVideos || [])
+                .slice()
+                .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+                .map(v => ({
+                    title:              v.title || '',
+                    channel:            v.channel || '',
+                    videolink:          v.videolink || '',
+                    watchedDate:        v.timestamp ? new Date(v.timestamp).toLocaleString() : '',
+                    timesWatched:       v.watchCount || 1,
+                    resumeTime:         formatTime(v.time),
+                    totalDuration:      formatTime(v.duration),
+                    resumeSeconds:      v.time || 0,
+                    durationSeconds:    v.duration || 0,
+                    complete:           v.complete || false,
+                    doNotResume:        v.doNotResume || false,
+                    timestamp:          v.timestamp || 0
+                }));
+
+            const backup = {
+                version:        2,
+                exportedAt:     new Date().toISOString(),
+                totalVideos:    sortedVideos.length,
+                ytProVideos:    sortedVideos,
+                resumeSettings: data.resumeSettings || {}
+            };
+            const json = JSON.stringify(backup, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url  = URL.createObjectURL(blob);
+            const date = new Date().toISOString().slice(0, 10);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `ytpro-backup-${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            const msg = document.getElementById('rsp-backup-msg');
+            msg.textContent = `✓ Backed up ${sortedVideos.length} videos!`;
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        });
+    });
+
+    // Restore button — opens a dedicated tab to avoid Firefox popup-closes-on-file-dialog bug
+    document.getElementById('rsp-restore-btn').addEventListener('click', () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL('restore-page.html') });
+    });
+
+    // When restore-page.html finishes writing storage, reload history here
+    chrome.runtime.onMessage.addListener((message) => {
+        if (message.action === 'restoreComplete') {
+            loadResumeHistory();
+            rpList.scrollTop = 0;
+            const msg = document.getElementById('rsp-backup-msg');
+            msg.textContent = '✓ Restore complete! History reloaded.';
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 4000);
+        }
+    });
+
     // ── Utility functions ───────────────────────────────────────────────────
     function extractWatchID(link) {
         if (!link) return '';
-        const start = link.indexOf('v=') + 2;
-        const end   = link.indexOf('&', start);
-        return end === -1 ? link.slice(start) : link.slice(start, end);
+        const m = link.match(/[?&]v=([^&#]+)/);
+        return m ? m[1] : '';
     }
 
     function formatTime(seconds) {

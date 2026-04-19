@@ -22,27 +22,63 @@ injectCSS('block-popups.css');
 // ─── Shorts Auto-Scroller ─────────────────────────────────────────────────────
 let autoScrollInterval = null;
 
+function getShortsActiveVideo() {
+    // Prefer the video inside the active reel renderer — avoids picking up
+    // lingering regular-video elements left in the DOM during SPA transitions.
+    const activeRenderer = document.querySelector('ytd-reel-video-renderer[is-active]');
+    if (activeRenderer) {
+        const v = activeRenderer.querySelector('video');
+        if (v && v.readyState > 2) return v;
+    }
+    // Fallback: any playing video while on a shorts URL
+    return Array.from(document.querySelectorAll('video'))
+        .find(v => !v.paused && v.readyState > 2) || null;
+}
+
+function forceDisableLoop(video) {
+    if (!video || !video.loop) return;
+    video.loop = false;
+}
+
 function initAutoScroll() {
     if (autoScrollInterval) clearInterval(autoScrollInterval);
+
+    // ── When YouTube SPA-navigates TO a shorts page, immediately seize the
+    // video and kill loop — before YouTube's own init can re-enable it.
+    document.addEventListener('yt-navigate-finish', () => {
+        if (!window.location.pathname.includes('/shorts/')) return;
+
+        // Try immediately, then retry a few times to win the race against
+        // YouTube's late loop-setter that runs after yt-navigate-finish.
+        [0, 100, 300, 600, 1000].forEach(delay => {
+            setTimeout(() => {
+                const v = getShortsActiveVideo() ||
+                    document.querySelector('ytd-reel-video-renderer[is-active] video') ||
+                    document.querySelector('ytd-shorts video');
+                if (v) forceDisableLoop(v);
+            }, delay);
+        });
+    });
+
     autoScrollInterval = setInterval(() => {
         if (!window.location.pathname.includes('/shorts/')) return;
 
-        const videos = Array.from(document.querySelectorAll('video'));
-        const activeVideo = videos.find(v => !v.paused && v.readyState > 2);
+        const activeVideo = getShortsActiveVideo();
+        if (!activeVideo) return;
 
-        if (activeVideo) {
-            activeVideo.loop = false;
-            if (activeVideo.duration > 0 && (activeVideo.duration - activeVideo.currentTime) < 0.4) {
-                const nextBtn = document.querySelector('#navigation-button-down ytd-button-renderer button') ||
-                                document.querySelector('#navigation-button-down button') ||
-                                document.querySelector('ytd-reel-video-renderer[is-active] #navigation-button-down button');
+        forceDisableLoop(activeVideo);
 
-                if (nextBtn) {
-                    activeVideo.currentTime = 0;
-                    nextBtn.click();
-                } else {
-                    window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
-                }
+        if (activeVideo.duration > 0 && (activeVideo.duration - activeVideo.currentTime) < 0.4) {
+            const nextBtn =
+                document.querySelector('ytd-reel-video-renderer[is-active] #navigation-button-down button') ||
+                document.querySelector('#navigation-button-down ytd-button-renderer button') ||
+                document.querySelector('#navigation-button-down button');
+
+            if (nextBtn) {
+                activeVideo.currentTime = 0;
+                nextBtn.click();
+            } else {
+                window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
             }
         }
     }, 200);
@@ -267,7 +303,9 @@ let resumeUserSettings = {};
 let resumeBlacklist = false;
 let resumeActive = false;
 let resumeTimeUpdateAbort = null; // AbortController for timeupdate listener cleanup
-const sessionTrackedVideos = new Set(); // tracks which video IDs had watchCount incremented this session
+const sessionTrackedVideos = new Set(); // DEPRECATED — kept to avoid reference errors, no longer used
+let currentNavVideoId      = null;  // video ID active in the current navigation
+let currentNavIncremented  = false; // whether watchCount was already incremented this navigation
 
 class YTProAutoResume {
     constructor() {
@@ -309,6 +347,11 @@ class YTProAutoResume {
                 resumeTimeUpdateAbort.abort();
                 resumeTimeUpdateAbort = null;
             }
+
+            // Reset per-navigation watch-count tracking so the new video
+            // (or a revisited video) gets its count incremented fresh.
+            currentNavVideoId     = null;
+            currentNavIncremented = false;
 
             if (resumeInitialLinkIsVideo) {
                 resumeInitialLinkIsVideo = false;
@@ -409,7 +452,7 @@ class YTProAutoResume {
                     minWatchTime: 60,
                     minVideoLength: 120,
                     markPlayedTime: 10,
-                    deleteAfter: 730
+                    deleteAfter: 0
                 });
             });
         });
@@ -441,7 +484,7 @@ class YTProAutoResume {
                             minWatchTime: 60,
                             minVideoLength: 120,
                             markPlayedTime: 10,
-                            deleteAfter: 730
+                            deleteAfter: 0
                         }
                     }, resolve);
                 } else {
@@ -452,9 +495,9 @@ class YTProAutoResume {
     }
 
     extractWatchID(link) {
-        const start = link.indexOf('v=') + 2;
-        const end   = link.indexOf('&', start);
-        return end === -1 ? link.slice(start) : link.slice(start, end);
+        if (!link) return '';
+        const m = link.match(/[?&]v=([^&#]+)/);
+        return m ? m[1] : '';
     }
 
     grabTitle() {
@@ -490,17 +533,8 @@ class YTProAutoResume {
                     this.extractWatchID(v.videolink) === this.extractWatchID(video.videolink)
                 );
 
-                // ── Don't overwrite a completed entry with an early position ──────
-                // When a "complete" video replays from 0, early timeupdate events
-                // would corrupt the stored data. Only allow overwrite once the user
-                // has genuinely watched past minWatchTime in this new session.
-                if (existing?.complete && video.time < (resumeUserSettings.minWatchTime || 60)) {
-                    resolve();
-                    return;
-                }
-
-                const currentCount = existing?.watchCount || 0;
-                const watchCount = incrementCount ? currentCount + 1 : (currentCount || 1);
+                const currentCount = existing?.watchCount ?? 0;
+                const watchCount = incrementCount ? currentCount + 1 : currentCount;
 
                 const videos = (data.ytProVideos || []).filter(v =>
                     this.extractWatchID(v.videolink) !== this.extractWatchID(video.videolink)
@@ -587,7 +621,7 @@ class YTProAutoResume {
                     this.extractWatchID(v.videolink) === this.extractWatchID(link)
                 );
                 if (found) {
-                    if (found.timestamp && this.daysSince(found.timestamp) > resumeUserSettings.deleteAfter) {
+                    if (found.timestamp && resumeUserSettings.deleteAfter && this.daysSince(found.timestamp) > resumeUserSettings.deleteAfter) {
                         this.deleteVideo(found).then(() => reject(-1));
                     } else {
                         resolve(found);
@@ -664,8 +698,18 @@ class YTProAutoResume {
                 const markPlayed = (video.duration - video.currentTime) < completionWindow;
 
                 const videoId = guardedVideoId;
-                const shouldIncrement = !sessionTrackedVideos.has(videoId);
-                if (shouldIncrement) sessionTrackedVideos.add(videoId);
+
+                // ── Per-navigation watch-count increment ──────────────────────
+                // Reset tracking whenever we're looking at a different video ID
+                // (handles title-change re-calls of monitorVideoTime for same video).
+                if (videoId !== currentNavVideoId) {
+                    currentNavVideoId     = videoId;
+                    currentNavIncremented = false;
+                }
+
+                const pastMinWatch    = video.currentTime >= (resumeUserSettings.minWatchTime || 60);
+                const shouldIncrement = pastMinWatch && !currentNavIncremented;
+                if (shouldIncrement) currentNavIncremented = true;
 
                 this.setTime({
                     videolink:   window.location.href,
@@ -683,10 +727,160 @@ class YTProAutoResume {
 }
 
 // ─── Initialise everything ────────────────────────────────────────────────────
+// ─── Masthead Glass Guard ─────────────────────────────────────────────────────
+// YouTube sets the masthead background via requestAnimationFrame on every scroll
+// tick, so MutationObserver alone always loses the last-frame race.
+// We fight back with our OWN rAF loop running at the same cadence — every frame
+// we force the exact glass styles, so the browser never paints the black state.
+let _mastheadRAFId   = null;
+let _mastheadActive  = false;
+
+const GLASS_SF     = '#00000022';
+const GLASS_BLUR   = '10px';
+const GLASS_SHADOW = '0 4px 24px #00000030, 2px 2px 1px #ffffff20 inset, -2px -2px 1px #ffffff10 inset';
+
+function _enforceGlass() {
+    // ── ALL CSS variables YouTube uses for masthead background ──────────────
+    // YouTube has added new variables on the watch page — cover every known one.
+    const VARS = [
+        '--yt-masthead-background-color',
+        '--ytd-masthead-color',
+        '--yt-masthead-custom-background-color',
+        '--ytd-masthead-background',
+        '--yt-spec-base-background',
+        '--yt-masthead-scrolled-background-color',
+    ];
+
+    // ── Clear variables on EVERY ancestor YouTube might target ───────────────
+    // On the watch page YouTube now also sets vars on ytd-watch-flexy, body, html
+    [
+        document.documentElement,
+        document.body,
+        document.querySelector('ytd-app'),
+        document.querySelector('ytd-watch-flexy'),
+        document.querySelector('ytd-page-manager'),
+    ].forEach(el => {
+        if (!el) return;
+        VARS.forEach(v => el.style.setProperty(v, 'transparent', 'important'));
+    });
+
+    // ── Enforce on the masthead elements directly ────────────────────────────
+    const outer     = document.getElementById('masthead-container');
+    const mast      = document.querySelector('ytd-masthead');
+    // Exact inner Polymer element YouTube targets on the watch page
+    // (found via uBlock Origin: #masthead > .ytd-masthead.style-scope)
+    const mastInner = document.querySelector('#masthead > .ytd-masthead.style-scope')
+                   || document.querySelector('#masthead > ytd-masthead');
+    const pill      = document.querySelector('ytd-masthead #container');
+
+    if (outer) {
+        outer.style.setProperty('background',       'transparent', 'important');
+        outer.style.setProperty('background-color', 'transparent', 'important');
+        outer.style.setProperty('box-shadow',       'none',        'important');
+        VARS.forEach(v => outer.style.setProperty(v, 'transparent', 'important'));
+    }
+    if (mast) {
+        mast.style.setProperty('background',       'transparent', 'important');
+        mast.style.setProperty('background-color', 'transparent', 'important');
+        mast.style.setProperty('box-shadow',       'none',        'important');
+        VARS.forEach(v => mast.style.setProperty(v, 'transparent', 'important'));
+    }
+    // Force the inner Polymer-scoped element — this is where YouTube writes
+    // the solid background on the watch page, overriding everything else
+    if (mastInner) {
+        mastInner.style.setProperty('background',       'transparent', 'important');
+        mastInner.style.setProperty('background-color', 'transparent', 'important');
+        mastInner.style.setProperty('box-shadow',       'none',        'important');
+        VARS.forEach(v => mastInner.style.setProperty(v, 'transparent', 'important'));
+    }
+    if (pill) {
+        pill.style.setProperty('background',              GLASS_SF,              'important');
+        pill.style.setProperty('background-color',        GLASS_SF,              'important');
+        pill.style.setProperty('backdrop-filter',         `blur(${GLASS_BLUR})`, 'important');
+        pill.style.setProperty('-webkit-backdrop-filter', `blur(${GLASS_BLUR})`, 'important');
+        pill.style.setProperty('border-radius',           '3000px',              'important');
+        pill.style.setProperty('box-shadow',              GLASS_SHADOW,          'important');
+        pill.style.setProperty('border',                  'none',                'important');
+        pill.style.setProperty('margin',                  '1px',                 'important');
+        VARS.forEach(v => pill.style.setProperty(v, 'transparent', 'important'));
+    }
+
+    if (_mastheadActive) _mastheadRAFId = requestAnimationFrame(_enforceGlass);
+}
+
+// ── Inject a hard CSS fallback so even non-JS-set backgrounds are overridden ─
+// This catches cases where YouTube sets background via a stylesheet rule rather
+// than inline JS, which the rAF loop alone cannot override.
+function _injectMastheadCSS() {
+    const id = 'yt-pro-masthead-override';
+    if (document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = `
+        #masthead-container,
+        ytd-masthead,
+        #masthead-container.ytd-app,
+        ytd-masthead.ytd-app,
+        #masthead > .ytd-masthead.style-scope,
+        #masthead > ytd-masthead {
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            --yt-masthead-background-color: transparent !important;
+            --ytd-masthead-color: transparent !important;
+            --yt-masthead-custom-background-color: transparent !important;
+            --ytd-masthead-background: transparent !important;
+            --yt-masthead-scrolled-background-color: transparent !important;
+        }
+        ytd-masthead #container {
+            background: ${GLASS_SF} !important;
+            background-color: ${GLASS_SF} !important;
+            backdrop-filter: blur(${GLASS_BLUR}) !important;
+            -webkit-backdrop-filter: blur(${GLASS_BLUR}) !important;
+            border-radius: 3000px !important;
+            box-shadow: ${GLASS_SHADOW} !important;
+            border: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function initMastheadGuard() {
+    if (_mastheadActive) return;
+    _mastheadActive = true;
+    _injectMastheadCSS();
+    _mastheadRAFId  = requestAnimationFrame(_enforceGlass);
+}
+
+function destroyMastheadGuard() {
+    _mastheadActive = false;
+    if (_mastheadRAFId) { cancelAnimationFrame(_mastheadRAFId); _mastheadRAFId = null; }
+    document.getElementById('yt-pro-masthead-override')?.remove();
+    const props = [
+        'background','background-color','backdrop-filter','-webkit-backdrop-filter',
+        'border-radius','box-shadow','border','margin',
+        '--ytd-masthead-color','--yt-masthead-background-color',
+        '--yt-masthead-custom-background-color','--ytd-masthead-background',
+        '--yt-spec-base-background','--yt-masthead-scrolled-background-color',
+    ];
+    [
+        document.documentElement, document.body,
+        document.querySelector('ytd-app'),
+        document.querySelector('ytd-watch-flexy'),
+        document.querySelector('ytd-page-manager'),
+        document.getElementById('masthead-container'),
+        document.querySelector('ytd-masthead'),
+        document.querySelector('ytd-masthead #container'),
+    ].forEach(el => { if (el) props.forEach(p => el.style.removeProperty(p)); });
+}
+
 chrome.storage.local.get(['masterEnabled', 'theme', 'premium', 'ambient', 'speed', 'autoscroll', 'download', 'autoResume'], (result) => {
     if (result.masterEnabled === false) return;
 
-    if (result.theme    !== false) injectCSS('theme.css');
+    if (result.theme    !== false) {
+        injectCSS('theme.css');
+        initMastheadGuard();
+    }
     if (result.premium  !== false) document.body.classList.add('yt-pro-premium');
     if (result.ambient  !== false) document.body.classList.add('yt-pro-ambient');
     if (result.speed    !== false) injectScript('inject-speed.js');
@@ -698,46 +892,15 @@ chrome.storage.local.get(['masterEnabled', 'theme', 'premium', 'ambient', 'speed
 // Auto Resume is initialised inside the class (checks its own toggle)
 new YTProAutoResume();
 
-// ─── Popup open/close — pause video while extension is open ───────────────────
-// Tracks whether WE paused the video (so we only resume if we were the ones who paused it).
-let _popupPausedVideo = false;
-
-function _getActiveVideo() {
-    // Prefer a playing video; fall back to any video on the page
-    return Array.from(document.querySelectorAll('video'))
-        .find(v => !v.paused && v.readyState > 2)
-        || document.querySelector('video');
-}
-
 // ─── Message Listener ─────────────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // ── Popup opened: pause if a video is playing ──────────────────────────
-    if (request.action === 'popupOpened') {
-        _popupPausedVideo = false;
-        const video = _getActiveVideo();
-        if (video && !video.paused) {
-            video.pause();
-            _popupPausedVideo = true;
-        }
-        return;
-    }
-
-    // ── Popup closed: resume only if we were the ones who paused it ────────
-    if (request.action === 'popupClosed') {
-        if (_popupPausedVideo) {
-            const video = _getActiveVideo() || document.querySelector('video');
-            if (video && video.paused) video.play().catch(() => {});
-        }
-        _popupPausedVideo = false;
-        return;
-    }
-
     if (request.action === 'masterToggleChanged') {
         if (!request.state) {
             document.body.classList.remove('yt-pro-premium', 'yt-pro-ambient');
             if (autoScrollInterval) clearInterval(autoScrollInterval);
             removeDownloadIntercept();
             document.querySelectorAll('link.yt-pro-injected-asset').forEach(el => el.remove());
+            destroyMastheadGuard();
             // Remove resume button from player if present
             document.querySelector('#yt-pro-resume-switch')?.remove();
         } else {
@@ -757,6 +920,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             document.querySelector('#yt-pro-resume-switch')?.remove();
         } else {
             location.reload();
+        }
+
+    // ── Popup open → pause; popup close → resume ─────────────────────────
+    // Only pauses if the video is actually playing; only resumes if WE paused it
+    // (so user-paused videos are never accidentally restarted).
+    } else if (request.action === 'pauseForPopup') {
+        const video = document.querySelector('video');
+        if (video && !video.paused) {
+            video._pausedByPopup = true;
+            video.pause();
+        }
+    } else if (request.action === 'resumeAfterPopup') {
+        const video = document.querySelector('video');
+        if (video && video._pausedByPopup) {
+            video._pausedByPopup = false;
+            video.play().catch(() => {});  // .catch so autoplay-policy errors are silent
         }
     }
 });

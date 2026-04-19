@@ -6,7 +6,7 @@ ytd-app, ytd-masthead, #page-manager.ytd-app, #content.ytd-app { background: tra
 #frosted-glass.with-chipbar.ytd-app { background: none !important; backdrop-filter: none !important; }
 * { font-family: "SF Pro Text", "Inter", "Segoe UI Variable Text", "Segoe UI", sans-serif !important; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .yt-spec-button-shape-next--mono .yt-spec-touch-feedback-shape__fill, .yt-spec-button-shape-next--mono .yt-spec-touch-feedback-shape__stroke { display: none !important; }
-#masthead-container { background: transparent !important; }
+#masthead-container { background: transparent !important; background-color: transparent !important; }
 ytd-masthead #container { border-radius: 3000px !important; background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; margin: 1px !important; box-shadow: var(--shadow-active) !important; border: none !important; }
 #description.ytd-watch-metadata, #secondary-inner, ytd-browse[page-subtype=home] #chips:not(ytd-guide-renderer #sections) { position: relative !important; overflow: hidden !important; padding: 0 10px !important; margin: 16px 16px 0 0 !important; border-radius: 34px !important; background: var(--sf) !important; border: none !important; box-shadow: var(--shadow-base) !important; transition: box-shadow var(--bounce) !important; }
 ytd-guide-renderer #sections { margin-left: 8px !important; }

@@ -1,7 +1,3 @@
-// ─── Chrome MV3: import compat shim before anything else ─────────────────────
-// In Firefox the manifest lists multiple background scripts; Chrome only allows
-// a single service_worker entry, so we pull the shim in via importScripts().
-importScripts('browser-compat.js');
 
 // ─── YouTube Pro + Background Service Worker ─────────────────────────────────
 // Handles the "Auto Fullscreen on YouTube" feature.
@@ -107,7 +103,23 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
     }
 });
 
-// ── Messages from popup ───────────────────────────────────────────────────────
+// ─── Protect user data on install / update ────────────────────────────────────
+// chrome.storage.local persists across updates automatically, but this listener
+// makes the intent explicit and guards against any future code accidentally
+// clearing storage on startup.
+chrome.runtime.onInstalled.addListener((details) => {
+    if (details.reason === 'update') {
+        // Extension updated — do NOT touch ytProVideos or resumeSettings.
+        // Just log silently so it's visible in the background console if needed.
+        chrome.storage.local.get(['ytProVideos'], (data) => {
+            const count = (data.ytProVideos || []).length;
+            console.log(`[YT Pro+] Updated to v${chrome.runtime.getManifest().version}. ${count} history entries preserved.`);
+        });
+    }
+    // For fresh installs, also do nothing — storage starts empty naturally.
+});
+
+
 chrome.runtime.onMessage.addListener((message) => {
     if (message.action === 'fullscreenToggleChanged') {
         if (!message.state) {
