@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const vl = document.getElementById('ext-version-label');
+    if (vl) { const m = chrome.runtime.getManifest(); vl.textContent = 'v' + m.version; }
+
     // ── Popup open/close video pause ────────────────────────────────────────
     // Cache the YouTube tab ID so we can send the resume message reliably
     // inside the pagehide handler (where async queries aren't possible).
@@ -569,5 +572,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function escapeHtml(str) {
         return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Info tooltip (i) button ──────────────────────────────────────────────
+    const infoBtn = document.getElementById('info-btn');
+    const tipBox  = document.getElementById('info-tooltip-box');
+    if (infoBtn && tipBox) {
+        infoBtn.addEventListener('mouseenter', () => {
+            tipBox.style.visibility = 'visible';
+            tipBox.style.opacity    = '1';
+        });
+        infoBtn.addEventListener('mouseleave', () => {
+            tipBox.style.opacity    = '0';
+            tipBox.style.visibility = 'hidden';
+        });
     }
 });

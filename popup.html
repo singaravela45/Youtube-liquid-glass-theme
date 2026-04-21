@@ -127,6 +127,31 @@
         }
         .label { font-size: 12.5px; font-weight: 500; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
+        /* ── Info tooltip button ── */
+        .info-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 15px; height: 15px; border-radius: 50%;
+            background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.22);
+            color: rgba(255,255,255,0.55); font-size: 9px; font-weight: 700;
+            cursor: help; margin-left: 5px; flex-shrink: 0;
+            transition: background 0.2s, border-color 0.2s;
+            font-style: italic; line-height: 1; vertical-align: middle;
+        }
+        .info-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,180,60,0.6); color: rgba(255,180,60,0.9); }
+        #info-tooltip-box {
+            visibility: hidden; opacity: 0;
+            position: fixed; left: 8px; right: 8px; bottom: 8px;
+            background: rgba(14,14,20,0.96); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,180,60,0.35);
+            border-radius: 11px; padding: 10px 12px;
+            color: rgba(255,255,255,0.85); font-size: 10.5px; line-height: 1.6;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,180,60,0.08) inset;
+            z-index: 99999; pointer-events: none;
+            transition: opacity 0.18s ease, visibility 0.18s ease;
+        }
+        #info-tooltip-box strong { color: rgba(255,180,60,0.95); display: block; margin-bottom: 4px; font-size: 11px; font-style: normal; }
+
         /* ── Toggle Switch ────────────────────────────────────────── */
         .switch {
             position: relative;
@@ -480,7 +505,10 @@
         <div class="header">
             <div class="title-group">
                 <img src="imgs/icon32.png" alt="Logo" class="ext-logo">
-                <h3 class="water-text">YouTube Pro +</h3>
+                <div style="display:flex;flex-direction:column;gap:1px;">
+                    <h3 class="water-text" style="margin:0;">YouTube Pro +</h3>
+                    <span id="ext-version-label" style="font-size:9px;color:rgba(255,255,255,0.28);letter-spacing:0.04em;font-weight:400;line-height:1;"></span>
+                </div>
             </div>
             <button id="master-toggle" class="power-btn active" title="Turn Extension On/Off">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -493,7 +521,7 @@
         <div class="settings-wrapper">
             <div class="setting">
                 <div class="setting-row">
-                    <div class="label-group"><div class="icon-box">🎨</div><span class="label">Liquid Glass Theme</span></div>
+                    <div class="label-group"><div class="icon-box">🎨</div><span class="label">Liquid Glass Theme</span><span class="info-btn" id="info-btn">i</span></div>
                     <label class="switch"><input type="checkbox" id="toggle-theme"><span class="slider"></span></label>
                 </div>
             </div>
@@ -662,6 +690,11 @@
                 <div id="recap-channels-list"></div>
             </div>
         </div>
+    </div>
+
+    <div id="info-tooltip-box">
+        <strong>⚠️ A note from the developer</strong>
+        I know about all UI bugs. YouTube constantly changes its code — when I fix one thing, 2 more break the next day. It's a cat &amp; mouse game. As a solo dev I can't chase every change instantly. Most features work until YouTube rewrites their whole logic — then I find a new workaround. Thanks for your patience! 🙏
     </div>
 
     <script src="browser-compat.js"></script>

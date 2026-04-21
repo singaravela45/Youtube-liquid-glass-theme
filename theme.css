@@ -14,7 +14,7 @@ ytd-browse[page-subtype=home] #chips:not(ytd-guide-renderer #sections), ytd-brow
 .yt-chip-shape { background-color: transparent !important; }
 #contents.ytd-page-manager { margin-top: 0; margin-left: 16px; }
 #guide-content.ytd-app { background: transparent; }
-#guide-wrapper.ytd-app { background: var(--sf) !important; border-radius: calc(20px * 1.15) / 20px !important; border: none !important; box-shadow: var(--shadow-base) !important; transition: box-shadow var(--bounce) !important; }
+#guide-wrapper.ytd-app { background: rgba(0,0,0,0.45) !important; backdrop-filter: blur(var(--blur)) saturate(180%) !important; -webkit-backdrop-filter: blur(var(--blur)) saturate(180%) !important; border-radius: calc(20px * 1.15) / 20px !important; border: 1px solid rgba(255,255,255,0.06) !important; box-shadow: var(--shadow-base) !important; transition: box-shadow var(--bounce), background var(--bounce) !important; }
 #endpoint.yt-simple-endpoint.ytd-guide-entry-renderer { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; border-radius: 300px !important; transition: transform var(--bounce), box-shadow var(--bounce), background var(--bounce), border-radius var(--bounce) !important; }
 #endpoint.yt-simple-endpoint.ytd-guide-entry-renderer:hover, #endpoint.yt-simple-endpoint.ytd-guide-entry-renderer:focus { background: var(--sf) !important; border-radius: 2000px !important; padding: 0px !important; box-shadow: var(--shadow-hover) !important; transform: scale(1.05); }
 #endpoint.yt-simple-endpoint.ytd-guide-entry-renderer:active { transform: scale(0.98); box-shadow: var(--shadow-active) !important; }
@@ -44,7 +44,7 @@ ytd-playlist-panel-video-renderer.ytd-playlist-panel-renderer:hover { box-shadow
 .yt-spec-button-shape-next--size-m.yt-spec-button-shape-next--segmented-start:hover::after { background: none !important; }
 .header.ytd-playlist-panel-renderer { background: none !important; }
 #container.ytd-playlist-panel-renderer { border: none !important; }
-.ytSearchboxComponentSuggestionsContainer, ytd-multi-page-menu-renderer { top: 55px !important; background: black !important; border: none !important; box-shadow: var(--shadow-hover) !important; border-radius: 20px !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
+.ytSearchboxComponentSuggestionsContainer, ytd-multi-page-menu-renderer { top: 55px !important; border: none !important; box-shadow: var(--shadow-hover) !important; border-radius: 20px !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
 #items.yt-multi-page-menu-section-renderer > *.yt-multi-page-menu-section-renderer:not([compact-link-style=compact-link-style-type-disclaimer]):not(ytd-message-renderer) { margin: 10px; border: none !important; border-radius: 2000px !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
 #items.yt-multi-page-menu-section-renderer > *.yt-multi-page-menu-section-renderer:not([compact-link-style=compact-link-style-type-disclaimer]):not(ytd-message-renderer):hover { transform: scale(1.02); box-shadow: var(--shadow-hover) !important; }
 .ytSuggestionComponentRoundedSuggestion { margin: 5px 10px; border: none !important; border-radius: 2000px !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
@@ -58,6 +58,7 @@ ytd-simple-menu-header-renderer { background: none !important; }
 .ytp-popup.ytp-delhi-modern-contextmenu { background: none !important; padding: 0 5px !important; border-radius: 20px !important; box-shadow: none !important; backdrop-filter: none !important; }
 .ytp-delhi-modern .ytp-chapter-container { width: 100% !important; padding-left: 10px; }
 ytd-app[frosted-glass-exp] tp-yt-app-drawer.ytd-app[persistent] { top: 75px !important; left: 8px !important; }
+tp-yt-app-drawer.ytd-app #contentContainer.tp-yt-app-drawer { background: transparent !important; }
 #sections.ytd-guide-renderer > *.ytd-guide-renderer:first-child { padding: 10px 3px !important; }
 ytd-guide-entry-renderer { border-radius: 2000px !important; }
 .ytSearchboxComponentDesktop .ytSearchboxComponentClearButton { margin-right: 10px; width: 30px !important; height: 30px !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
@@ -150,3 +151,80 @@ body.yt-pro-premium ytd-topbar-logo-renderer a#logo > * { display: none !importa
 body.yt-pro-premium ytd-topbar-logo-renderer a#logo::before { content: ""; display: block !important; width: 34px !important; height: 24px !important; background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgNzAiPjxwYXRoIGZpbGw9IiNGRjAwMDAiIGQ9Ik05Ny43LDExQzk2LjUsNi42LDkzLDMuMSw4OC42LDJDODAuOCwwLDUwLDAsNTAsMFMxOS4yLDAsMTEuNCwyQzcsMy4xLDMuNSw2LjYsMi4zLDExQzAsMTguOCwwLDM1LDAsMzVzMCwxNi4yLDIuMywyNGMxLjIsNC40LDQuNyw3LjksOS4xLDlDMTkuMiw3MCw1MCw3MCw1MCw3MHMzMC44LDAsMzguNi0yYzQuNC0xLjIsNy45LTQuNyw5LjEtOUMxMDAsNTEuMiwxMDAsMzUsMTAwLDM1UzEwMCwxOC44LDk3LjcsMTF6Ii8+PHBhdGggZmlsbD0iI0ZGRkZGRiIgZD0iTTQwLDUwbDI2LTE1TDQwLDIwVjUweiIvPjwvc3ZnPg==") !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; margin-right: 2px !important; }
 body.yt-pro-premium ytd-topbar-logo-renderer a#logo::after { content: "Premium"; display: block !important; font-family: "YouTube Sans", "Roboto", "Segoe UI", Arial, sans-serif !important; font-size: 22px !important; font-weight: 500 !important; color: #FFFFFF !important; margin-left: 2px !important; letter-spacing: -0.5px !important; line-height: 22px !important; }
 body.yt-pro-premium ytd-topbar-logo-renderer #country-code { position: relative !important; display: block !important; margin-left: 2px !important; top: -8px !important; color: #aaaaaa !important; font-size: 11px !important; font-family: "Roboto", sans-serif !important; font-weight: 500 !important; }
+/* ============================================================
+   YOUTUBE CLASSNAME RENAME FIX (kebab-case → camelCase 2025+)
+   YouTube renamed all yt-spec-button-shape-next--* classes.
+   These rules mirror every button rule above for the new names.
+   ============================================================ */
+
+/* --- HAMBURGER / GUIDE BUTTON --- */
+yt-icon-button#guide-button { border-radius: 2000px !important; transition: transform var(--bounce), box-shadow var(--bounce), background var(--bounce) !important; }
+yt-icon-button#guide-button:hover { background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; box-shadow: var(--shadow-hover) !important; transform: scale(1.1); }
+yt-icon-button#guide-button:active { transform: scale(0.95) !important; box-shadow: var(--shadow-active) !important; }
+
+/* --- CREATE BUTTON (masthead) --- */
+#buttons.ytd-masthead ytd-button-renderer yt-button-shape button { border-radius: 2000px !important; background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; box-shadow: var(--shadow-base) !important; transition: transform var(--bounce), box-shadow var(--bounce), background var(--bounce) !important; }
+#buttons.ytd-masthead ytd-button-renderer yt-button-shape button:hover { box-shadow: var(--shadow-hover) !important; transform: scale(1.06); }
+#buttons.ytd-masthead ytd-button-renderer yt-button-shape button:active { transform: scale(0.97) !important; box-shadow: var(--shadow-active) !important; }
+
+/* --- NOTIFICATION BELL --- */
+ytd-notification-topbar-button-renderer.ytd-masthead yt-icon-button#icon { border-radius: 2000px !important; padding: 4px !important; transition: transform var(--bounce), box-shadow var(--bounce), background var(--bounce) !important; }
+ytd-notification-topbar-button-renderer.ytd-masthead yt-icon-button#icon:hover { background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; box-shadow: var(--shadow-hover) !important; transform: scale(1.1); }
+
+/* --- SUBSCRIBE BUTTON — red glow on hover (camelCase) --- */
+ytd-subscribe-button-renderer button.ytSpecButtonShapeNextTonal { transition: transform var(--bounce), box-shadow var(--bounce), background var(--bounce) !important; position: relative; overflow: hidden; cursor: pointer !important; }
+ytd-subscribe-button-renderer button.ytSpecButtonShapeNextTonal:hover { transform: scale(1.08) !important; color: white !important; box-shadow: inset 0 0 25px red, inset 0 0 50px red, 0 0 15px red, 0 0 30px red !important; animation: youtubeRedPulse 5s ease-in-out infinite !important; }
+
+/* --- ALL TONAL BUTTONS: Share / Ask / Save / Download / Subscribe
+       Exclude segmented start/end — those are handled below.  --- */
+button.ytSpecButtonShapeNextTonal:not(.ytSpecButtonShapeNextSegmentedStart):not(.ytSpecButtonShapeNextSegmentedEnd) { border-radius: 2000px !important; background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; box-shadow: var(--shadow-base) !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
+button.ytSpecButtonShapeNextTonal:not(.ytSpecButtonShapeNextSegmentedStart):not(.ytSpecButtonShapeNextSegmentedEnd):hover { box-shadow: var(--shadow-hover) !important; transform: scale(1.06); }
+button.ytSpecButtonShapeNextTonal:not(.ytSpecButtonShapeNextSegmentedStart):not(.ytSpecButtonShapeNextSegmentedEnd):active { transform: scale(0.97) !important; box-shadow: var(--shadow-active) !important; }
+
+/* --- LIKE / DISLIKE — two separate glass capsules, not joined --- */
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper { display: flex !important; gap: 6px !important; background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; overflow: visible !important; }
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper button.ytSpecButtonShapeNextSegmentedStart,
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper button.ytSpecButtonShapeNextSegmentedEnd { border-radius: 2000px !important; background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; box-shadow: var(--shadow-base) !important; transition: transform var(--bounce), box-shadow var(--bounce) !important; }
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper button.ytSpecButtonShapeNextSegmentedStart:hover,
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper button.ytSpecButtonShapeNextSegmentedEnd:hover { box-shadow: var(--shadow-hover) !important; transform: scale(1.06); }
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper button.ytSpecButtonShapeNextSegmentedStart:active,
+.ytSegmentedLikeDislikeButtonViewModelSegmentedButtonsWrapper button.ytSpecButtonShapeNextSegmentedEnd:active { transform: scale(0.97) !important; box-shadow: var(--shadow-active) !important; }
+
+/* --- TEXT / MONO BUTTONS (camelCase) --- */
+button.ytSpecButtonShapeNextText { border-radius: 2000px !important; transition: transform var(--bounce), box-shadow var(--bounce), background var(--bounce) !important; }
+button.ytSpecButtonShapeNextText:hover { background: var(--sf) !important; backdrop-filter: blur(var(--blur)) !important; -webkit-backdrop-filter: blur(var(--blur)) !important; box-shadow: var(--shadow-hover) !important; transform: scale(1.05); }
+button.ytSpecButtonShapeNextText:active { transform: scale(0.97) !important; box-shadow: var(--shadow-active) !important; }
+
+/* --- MIX PLAYLIST SIDEBAR — glass background, not black --- */
+ytd-playlist-panel-renderer { background: rgba(14,14,18,0.55) !important; backdrop-filter: blur(20px) saturate(160%) !important; -webkit-backdrop-filter: blur(20px) saturate(160%) !important; }
+#secondary-inner ytd-playlist-panel-renderer { border-radius: 20px !important; }
+
+/* --- NOTIFICATION PANEL / YOU+SUBSCRIPTIONS POPUP — glass --- */
+.ytSearchboxComponentSuggestionsContainer, ytd-multi-page-menu-renderer { background: rgba(14,14,18,0.60) !important; backdrop-filter: blur(28px) saturate(180%) !important; -webkit-backdrop-filter: blur(28px) saturate(180%) !important; border: 1px solid rgba(255,255,255,0.07) !important; }
+
+/* --- SEARCH SUGGESTIONS — frosted glass blur --- */
+.ytSearchboxComponentSuggestionsContainer {
+    background: rgba(10,10,14,0.88) !important;
+    backdrop-filter: blur(32px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255,255,255,0.09) !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
+}
+
+/* --- VIDEO CARD 3-DOT — always visible, no scale (avoids clip) --- */
+.ytLockupMetadataViewModelMenuButton { overflow: visible !important; }
+.ytLockupMetadataViewModelMenuButton button-view-model,
+.ytLockupMetadataViewModelMenuButton button { opacity: 1 !important; visibility: visible !important; border-radius: 2000px !important; transition: background var(--bounce), box-shadow var(--bounce) !important; }
+.ytLockupMetadataViewModelMenuButton button:hover { background: rgba(255,255,255,0.14) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.12) !important; transform: none !important; backdrop-filter: none !important; }
+/* Suppress yt-interaction fill which causes flash */
+.ytLockupMetadataViewModelMenuButton yt-interaction .fill,
+.ytLockupMetadataViewModelMenuButton .ytSpecTouchFeedbackShapeFill { background: transparent !important; opacity: 0 !important; }
+
+/* --- COMMENT BUTTONS — no scale/backdrop (flash fix) --- */
+ytd-comment-view-model button,
+ytd-comment-renderer button { border-radius: 2000px !important; transition: background 0.15s ease, box-shadow 0.15s ease !important; transform: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+ytd-comment-view-model button:hover,
+ytd-comment-renderer button:hover { background: rgba(255,255,255,0.12) !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08) !important; transform: none !important; }
+ytd-comment-view-model yt-interaction .fill,
+ytd-comment-renderer yt-interaction .fill { background: transparent !important; opacity: 0 !important; }

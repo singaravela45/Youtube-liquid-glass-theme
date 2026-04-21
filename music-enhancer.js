@@ -908,7 +908,7 @@
 
       hrtfPanner = audioCtx.createPanner();
       hrtfPanner.panningModel='HRTF'; hrtfPanner.distanceModel='inverse';
-      hrtfPanner.refDistance=1; hrtfPanner.maxDistance=20; hrtfPanner.rolloffFactor=0.8;
+      hrtfPanner.refDistance=HRTF_RADIUS; hrtfPanner.maxDistance=10000; hrtfPanner.rolloffFactor=0;
       hrtfPanner.coneInnerAngle=360; hrtfPanner.coneOuterAngle=0; hrtfPanner.coneOuterGain=0;
       if (hrtfPanner.positionX) {
         hrtfPanner.positionX.value=0; hrtfPanner.positionY.value=0; hrtfPanner.positionZ.value=-HRTF_RADIUS;

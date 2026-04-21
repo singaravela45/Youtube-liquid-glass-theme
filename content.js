@@ -1,3 +1,10 @@
+// ─── Extension context guard ─────────────────────────────────────────────────
+// Prevents "Extension context invalidated" crashes when the extension is
+// reloaded/updated while a YouTube tab is still open with the old script.
+function isCtxValid() {
+    try { return !!chrome.runtime?.id; } catch(e) { return false; }
+}
+
 // ─── YT Pro Plus: Asset Injectors ────────────────────────────────────────────
 function injectCSS(file) {
     const link = document.createElement("link");
@@ -18,6 +25,8 @@ function injectScript(file) {
 
 // Always block the interruption toast, regardless of master toggle
 injectCSS('block-popups.css');
+// Always inject premium logo + ambient styles so they work independently of the theme toggle
+injectCSS('features.css');
 
 // ─── Shorts Auto-Scroller ─────────────────────────────────────────────────────
 let autoScrollInterval = null;
@@ -254,6 +263,7 @@ function injectBadgesOnPage() {
 }
 
 function loadBadgeData(cb) {
+    if (!isCtxValid()) return;
     chrome.storage.local.get('ytProVideos', (data) => {
         badgeVideoData = {};
         (data.ytProVideos || []).forEach(v => {
@@ -874,7 +884,7 @@ function destroyMastheadGuard() {
     ].forEach(el => { if (el) props.forEach(p => el.style.removeProperty(p)); });
 }
 
-chrome.storage.local.get(['masterEnabled', 'theme', 'premium', 'ambient', 'speed', 'autoscroll', 'download', 'autoResume'], (result) => {
+if (isCtxValid()) chrome.storage.local.get(['masterEnabled', 'theme', 'premium', 'ambient', 'speed', 'autoscroll', 'download', 'autoResume'], (result) => {
     if (result.masterEnabled === false) return;
 
     if (result.theme    !== false) {
@@ -893,7 +903,7 @@ chrome.storage.local.get(['masterEnabled', 'theme', 'premium', 'ambient', 'speed
 new YTProAutoResume();
 
 // ─── Message Listener ─────────────────────────────────────────────────────────
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+if (isCtxValid()) chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'masterToggleChanged') {
         if (!request.state) {
             document.body.classList.remove('yt-pro-premium', 'yt-pro-ambient');
