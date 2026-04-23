@@ -45,12 +45,7 @@ Click the image below to watch the full showcase and installation guide on YouTu
 * **👑 Premium Logo Toggle:** Instantly replaces the standard YouTube logo with the clean YouTube Premium logo.
 * **🌌 Super Ambient Mode:** Enhances YouTube's native ambient mode with a wider, more vibrant glow around the video player.
 * **⚡ 10x Speed Booster:** Bypasses YouTube's native 2x speed limit, allowing you to seamlessly increase playback speed up to 10x directly from the native player settings.
-* **🎛️ Audio Enhancer & EQ:** A built-in audio engine featuring:
-    * Up to **300% Volume Boost**.
-    * Custom **3-Band Equalizer** (Lows, Mids, Highs).
-    * Built-in presets (Bass Boost, Clear Vocals).
-    * Live audio visualizer with an anime dancing GIF.
-    * *Quick Access:* Press `Alt + Q` while watching a video to instantly open the audio panel.
+* **🎛️ Sound Booster :Boost yt vidios sound as much you need .
 * **🔁 Shorts Auto-Scroller:** A robust background script that intelligently detects when a YouTube Short finishes and automatically scrolls to the next one—completely hands-free.
 * **⬇️ Smart Download:** A smart third-party download support added replacing the default download button (if you want to use the normal download then just turn off the setting in the extension).
 * **⏯️ History and auto resume :** A smart system  storing all your watched vidios with date and duration of vidios watched. When you click on the video next time it will play feom where you left it last time and you can change which ever settings you like -- and also there is a recap intregation in it it will tell you your all time top 5 vidios and top 5 chanels .
