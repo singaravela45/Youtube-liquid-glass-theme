@@ -52,7 +52,7 @@ Click the image below to watch the full showcase and installation guide on YouTu
 * **⏯️ History and auto resume :** A smart system  storing all your watched vidios with date and duration of vidios watched. When you click on the video next time it will play feom where you left it last time and you can change which ever settings you like -- and also there is a recap intregation in it it will tell you your all time top 5 vidios and top 5 chanels .
 ---
 
-## 🛠️ Local Installation (Chrome, Opera, Brave)
+## 🛠️ Local Installation (Chrome, Opera, Brave, Vivaldi etc.)
 
 For users on other Chromium browsers where the extension is not yet in the store, you can install the latest stable build locally in Developer Mode in just a few seconds:
 
@@ -68,29 +68,16 @@ For users on other Chromium browsers where the extension is not yet in the store
 ## 🖥️ Usage
 
 * **Main Settings:** Click the `YouTube Pro +` extension icon in your toolbar to open the Liquid Glass settings popup. From here, you can toggle every single feature on or off in real-time.
-* **Audio Enhancer:** Click the "Open Audio Panel" button in the extension popup, or simply press **`Alt + Q`** on your keyboard to bring up the equalizer overlay.
 
 ---
 
-## 📁 File Structure
-
-* `manifest.json` - Chrome extension configuration.
-* `popup.html` / `popup.js` - The Liquid Glass settings UI.
-* `content.js` - The master script that manages injections and the Shorts Auto-Scroller logic.
-* `theme.css` - The master stylesheet for the Liquid Glass UI.
-* `inject-speed.js` - Bypasses the YouTube player to unlock 10x speed.
-* `inject-audio.js` - Hooks into the Web Audio API for the volume booster and custom EQ.
-* `inject-download.js` - Third-party downloader website support and automation of the process.
-* `/imgs/` - Contains the custom extension icons and README graphics.
-
----
 
 ## ⚠️ Disclaimer
 
 This extension modifies YouTube's native DOM and playback variables. If YouTube updates their interface, some features (like the Shorts Scroller or Speed Booster) may temporarily stop working until the selectors are updated in the code.
 The download feature is completely dependent on third party websites so it can stop working at anytime . If any error issues is there kindly raise a issue in github .
 
-**Note on Audio Boosting:** Heavily boosting the "Lows" on the equalizer while at 300% volume may cause audio distortion depending on your hardware. It is recommended to keep the master volume at 100% when heavily boosting bass.
+
 
 ---
 
