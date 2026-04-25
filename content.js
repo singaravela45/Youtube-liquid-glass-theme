@@ -884,111 +884,295 @@ function destroyMastheadGuard() {
     ].forEach(el => { if (el) props.forEach(p => el.style.removeProperty(p)); });
 }
 
-// ─── Cinematic Mode — custom canvas glow (dark + light) ──────────────────────
-// "Super Ambient" boosts YouTube's native #cinematics via CSS (dark mode only).
-// "Cinematic Mode" is our own canvas pipeline: samples the live video frame
-// every rAF tick and projects a blurred glow around the player — works in ANY
-// colour mode, independently of YouTube's native ambient system.
-// Both can be active simultaneously in dark mode for maximum intensity.
+// ─── Cinematic Mode — preset value maps ──────────────────────────────────────
+const CINE_PRESETS = {
+    blur: { low: '50px',  med: '90px',  high: '130px' },
+    sat:  { low: '120%',  med: '160%',  high: '210%'  },
+    dim:  { low: '0.35',  med: '0.55',  high: '0.78'  },
+};
+function buildCineFilter(s) {
+    const blur = CINE_PRESETS.blur[(s && s.blur) || 'med'];
+    const sat  = CINE_PRESETS.sat [(s && s.sat)  || 'med'];
+    return `blur(${blur}) saturate(${sat}) brightness(0.95)`;
+}
+function getCineDim(s) {
+    return CINE_PRESETS.dim[(s && s.dim) || 'med'];
+}
+
+// ─── Cinematic Mode — ultra-efficient GPU-composited background glow ───────────
+//
+// Full rendering pipeline (zero CPU pixel work, zero decoder contention):
+//
+//  1. requestVideoFrameCallback (rVFC) — fires once per decoded video frame,
+//     IN SYNC with the video's own presentation. No rAF cadence mismatch,
+//     no main/decoder-thread synchronization pressure on any browser.
+//     Chrome 83+, Firefox 132+. Falls back to setInterval at 20fps.
+//
+//  2. createImageBitmap(video, {resizeWidth, resizeHeight, resizeQuality:'low'})
+//     — GPU-accelerated snapshot + downscale in a single async call. The resize
+//     happens on the GPU at capture time, so the ImageBitmap we receive is
+//     already the target size. CPU never touches a pixel.
+//
+//  3. ImageBitmapRenderingContext.transferFromImageBitmap(bmp)
+//     — ZERO-COPY canvas update: transfers ownership of the GPU-side bitmap
+//     to the canvas backing store by swapping a pointer. No memcpy, no
+//     drawImage overhead, no pixel format conversion. The canvas texture is
+//     updated entirely on the GPU side. Chrome 66+, Firefox 65+.
+//
+//  4. CSS filter (blur/saturate/brightness) on the canvas element
+//     — Applied by the GPU compositor, never involves JS or CPU.
+//     The canvas lives on its own compositor layer (will-change: transform).
+//
+//  5. Throttle to 20fps max — the ambient glow is blurred 50-130px. At that
+//     radius, frame rate above 15fps is visually imperceptible. Throttling
+//     cuts GPU texture upload work by 3x on 60fps content.
+//
+//  6. Skip when paused, tab hidden, video stalled, or a bitmap is already
+//     in-flight — zero wasted GPU work in every idle/background state.
+//
+//  7. 64x36 internal canvas — 1/4 the GPU texture memory of the previous 128x72.
+//     At blur(90px) there is literally zero visible difference.
+//
+// Net result: video decoder, JS main thread, and GPU compositor operate
+// completely independently with no synchronization stalls anywhere.
 (function () {
-    let canvas = null;
-    let raf = null;
-    let retryTimer = null;
+    let canvas      = null;
+    let ctx         = null;   // ImageBitmapRenderingContext — zero-copy path
+    let raf         = null;
+    let retryTimer  = null;
+    let lastUrl     = location.href;
+    let cineSettings = { blur: 'med', sat: 'med', dim: 'med' };
+
+    // 64x36 — 1/4 the GPU cost of 128x72, visually identical at any blur preset.
+    const DRAW_W = 64;
+    const DRAW_H = 36;
+
+    // Glow update cap: 20fps. Imperceptible on a 50-130px blurred canvas.
+    // At 60fps content this cuts GPU bitmap uploads from 60/s down to 20/s.
+    const FRAME_MS = 50;
+
+    let lastDrawTime  = 0;
+    let lastVideoTime = -1; // stall detection — skip if currentTime hasn't moved
+    let drawPending   = false; // guard against overlapping createImageBitmap calls
+
+    function isWatchPage() { return location.pathname === '/watch'; }
+
+    // Hide the canvas immediately on navigation / source change.
+    // With bitmaprenderer we don't need to clearRect — just fade out.
+    function clearCanvas() {
+        if (!canvas) return;
+        canvas.style.transition = 'opacity 0.3s ease';
+        canvas.style.opacity    = '0';
+        lastVideoTime = -1;
+    }
 
     function attach() {
-        if (canvas) return; // Already running
-
-        const player = document.querySelector(
-            '#player-container-inner, #player-container, #movie_player'
-        );
+        if (canvas) return;
         const video = document.querySelector('video.html5-main-video');
+        if (!video) { retryTimer = setTimeout(attach, 600); return; }
+        if (!isCtxValid()) return;
+        chrome.storage.local.get('cinematicSettings', (r) => {
+            cineSettings = r.cinematicSettings || { blur: 'med', sat: 'med', dim: 'med' };
+            _doAttach(video);
+        });
+    }
 
-        if (!player || !video) {
-            retryTimer = setTimeout(attach, 600);
-            return;
-        }
+    function _doAttach(video) {
+        if (canvas) return; // guard against double-call
 
-        // ── Key fix: parent to a non-clipping ancestor ──────────────────────
-        // #player-container-inner has overflow:hidden (our features.css line 14).
-        // We climb up to ytd-watch-flexy #primary which never clips overflow,
-        // so the blur+scale glow can bleed freely outside the player rect.
-        const anchor =
-            document.querySelector('ytd-watch-flexy #primary') ||
-            document.querySelector('ytd-watch-flexy')          ||
-            player.parentElement?.parentElement                 ||
-            player.parentElement;
-
-        if (!anchor) { retryTimer = setTimeout(attach, 600); return; }
-
-        if (getComputedStyle(anchor).position === 'static') {
-            anchor.style.position = 'relative';
-        }
-
+        // Tiny canvas — CSS scales it to 100vw x 100vh
         canvas = document.createElement('canvas');
-        canvas.id = 'yt-pro-cinematic-canvas';
+        canvas.id     = 'yt-pro-cinematic-canvas';
+        canvas.width  = DRAW_W;
+        canvas.height = DRAW_H;
         Object.assign(canvas.style, {
-            position:        'absolute',
+            position:        'fixed',
+            top:             '0',
+            left:            '0',
+            width:           '100vw',
+            height:          '100vh',
             zIndex:          '0',
             pointerEvents:   'none',
-            filter:          'blur(35px) saturate(260%) brightness(1.3) contrast(1.08)',
-            transform:       'scale(1.45)',
-            transformOrigin: 'top left',
-            opacity:         '0.88',
-            borderRadius:    '20px',
-            // start hidden; positionCanvas() fills in left/top/width/height
-            left: '0', top: '0',
+            filter:          buildCineFilter(cineSettings),
+            opacity:         '0',             // fades in on first 'playing' event
+            transform:       'scale(1.08)',
+            transformOrigin: 'center center',
+            // Own compositor layer — canvas repaints never trigger page repaints.
+            // Prevents opacity animations from forcing layer promotions later.
+            willChange:      'transform, opacity',
         });
 
-        // Insert before everything else in the anchor so it is behind all content
-        anchor.insertBefore(canvas, anchor.firstChild);
+        document.body.insertBefore(canvas, document.body.firstChild);
 
-        const ctx = canvas.getContext('2d');
+        // ImageBitmapRenderingContext: transferFromImageBitmap() swaps the
+        // canvas backing texture by pointer — zero pixel copy, zero CPU work.
+        ctx = canvas.getContext('bitmaprenderer');
 
-        // Sync canvas geometry to the live player rect (handles resizes, theatre mode, etc.)
-        function positionCanvas() {
-            const pr = player.getBoundingClientRect();
-            const ar = anchor.getBoundingClientRect();
-            const x  = Math.round(pr.left - ar.left);
-            const y  = Math.round(pr.top  - ar.top);
-            const w  = Math.round(pr.width)  || 640;
-            const h  = Math.round(pr.height) || 360;
-            canvas.style.left   = x + 'px';
-            canvas.style.top    = y + 'px';
-            canvas.style.width  = w + 'px';
-            canvas.style.height = h + 'px';
-            if (canvas.width  !== w) canvas.width  = w;
-            if (canvas.height !== h) canvas.height = h;
+        // Fade in only once the new video actually starts playing
+        function onPlaying() {
+            if (!canvas) return;
+            canvas.style.transition = 'opacity 0.6s ease';
+            canvas.style.opacity    = getCineDim(cineSettings);
+        }
+        video.addEventListener('playing', onPlaying);
+        canvas._onPlaying = () => { video.removeEventListener('playing', onPlaying); };
+
+        // Wipe canvas instantly when YouTube swaps the video source
+        function onSourceChange() { clearCanvas(); }
+        video.addEventListener('emptied',   onSourceChange);
+        video.addEventListener('loadstart', onSourceChange);
+        canvas._removeSourceListeners = () => {
+            video.removeEventListener('emptied',   onSourceChange);
+            video.removeEventListener('loadstart', onSourceChange);
+        };
+
+        // Core draw function
+        function drawFrame(now) {
+            if (!canvas || !document.body.classList.contains('yt-pro-cinematic')) return;
+            if (!isWatchPage()) return;
+
+            // Skip when tab is hidden — no visual benefit, pure waste
+            if (document.hidden) return;
+
+            // Skip when video is paused — glow doesn't need updating
+            if (video.paused) return;
+
+            // Skip if video hasn't buffered enough to have a renderable frame
+            if (video.readyState < 2) return;
+
+            // Throttle: cap glow updates at 20fps regardless of video frame rate
+            if (now - lastDrawTime < FRAME_MS) return;
+
+            // Skip if the video is stalled (currentTime not advancing)
+            // Prevents hammering the GPU during buffering events
+            const vt = video.currentTime;
+            if (vt === lastVideoTime) return;
+            lastVideoTime = vt;
+
+            // Guard: don't start a new capture while the previous one is still
+            // in-flight. Protects against slow GPU or throttled tabs.
+            if (drawPending) return;
+            drawPending   = true;
+            lastDrawTime  = now;
+
+            // createImageBitmap with resize options:
+            //   - The browser/GPU performs the downscale during capture,
+            //     so the returned ImageBitmap is already DRAW_W x DRAW_H.
+            //   - resizeQuality:'low' = nearest-neighbor, fastest possible,
+            //     quality is irrelevant at 50-130px CSS blur.
+            //   - The Promise resolves off the critical path — video decoder
+            //     and main thread are both free the moment this fires.
+            createImageBitmap(video, {
+                resizeWidth:   DRAW_W,
+                resizeHeight:  DRAW_H,
+                resizeQuality: 'low',
+            }).then(bmp => {
+                drawPending = false;
+                if (!ctx || !canvas) { bmp.close(); return; }
+                // transferFromImageBitmap: GPU pointer swap — the fastest
+                // possible canvas update. After this call bmp is neutered
+                // (ownership transferred), so we must NOT call bmp.close().
+                ctx.transferFromImageBitmap(bmp);
+            }).catch(() => {
+                // createImageBitmap can fail if the video is in a tainted/
+                // cross-origin state. Silently skip this frame.
+                drawPending = false;
+            });
         }
 
-        function draw() {
-            if (!document.body.classList.contains('yt-pro-cinematic')) {
-                stop(); return;
+        // Draw scheduling: rVFC > setInterval fallback
+        if (typeof video.requestVideoFrameCallback === 'function') {
+            // rVFC fires once per decoded frame, in sync with the video's own
+            // presentation pipeline. No rAF mismatch, no decoder contention.
+            // Chrome 83+, Firefox 132+.
+            function onVideoFrame(now) {
+                if (!canvas || !document.body.classList.contains('yt-pro-cinematic')) return;
+                drawFrame(now);
+                raf = video.requestVideoFrameCallback(onVideoFrame);
             }
-            positionCanvas();
-            if (video.readyState >= 2) {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            }
-            raf = requestAnimationFrame(draw);
+            raf = video.requestVideoFrameCallback(onVideoFrame);
+            canvas._cancelDraw = () => {
+                if (raf != null) { video.cancelVideoFrameCallback(raf); raf = null; }
+            };
+        } else {
+            // Fallback for Firefox < 132: setInterval at 20fps.
+            // Does not trigger main/decoder thread synchronization the way rAF
+            // does, so it avoids stutter on older Firefox.
+            raf = setInterval(() => drawFrame(performance.now()), FRAME_MS);
+            canvas._cancelDraw = () => {
+                if (raf != null) { clearInterval(raf); raf = null; }
+            };
         }
-        draw();
     }
 
     function stop() {
-        if (raf)        { cancelAnimationFrame(raf); raf = null; }
-        if (retryTimer) { clearTimeout(retryTimer);  retryTimer = null; }
-        if (canvas)     { canvas.remove(); canvas = null; }
+        drawPending  = false;
+        lastDrawTime = 0;
+        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+        if (canvas) {
+            if (canvas._cancelDraw)            canvas._cancelDraw();
+            if (canvas._onPlaying)             canvas._onPlaying();
+            if (canvas._removeSourceListeners) canvas._removeSourceListeners();
+            canvas.remove();
+            canvas = null;
+            ctx    = null;
+            raf    = null;
+        }
     }
 
-    // Re-attach on SPA navigation (body child changes when YouTube swaps pages)
+    // Primary nav signal: yt-navigate-finish
+    document.addEventListener('yt-navigate-finish', () => {
+        lastUrl = location.href;
+        if (!document.body.classList.contains('yt-pro-cinematic')) return;
+        clearCanvas();
+        stop();
+        if (isWatchPage()) retryTimer = setTimeout(attach, 600);
+    });
+
+    // Fallback URL poll (handles cases where yt-navigate-finish misfires)
+    setInterval(() => {
+        const currentUrl = location.href;
+        if (currentUrl === lastUrl) return;
+        lastUrl = currentUrl;
+        if (!document.body.classList.contains('yt-pro-cinematic')) return;
+        clearCanvas();
+        stop();
+        if (isWatchPage()) retryTimer = setTimeout(attach, 600);
+    }, 300);
+
+    // Re-attach if YouTube's SPA removes our canvas from the DOM
     const navObserver = new MutationObserver(() => {
         if (!document.body.classList.contains('yt-pro-cinematic')) return;
-        if (!document.getElementById('yt-pro-cinematic-canvas')) { stop(); attach(); }
+        if (!document.getElementById('yt-pro-cinematic-canvas') && isWatchPage() && !retryTimer && !canvas) {
+            retryTimer = setTimeout(attach, 300);
+        }
     });
     navObserver.observe(document.body, { childList: true, subtree: false });
 
-    // Expose so the message listener can call start/stop
-    window._ytProCinematic = { attach, stop };
+    // Pause drawing when tab goes into background, resume on return
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            // Reset stall detection so the first visible frame is drawn immediately
+            lastVideoTime = -1;
+            lastDrawTime  = 0;
+        }
+    });
+
+    // Expose so the message listener can call start/stop/applySettings
+    window._ytProCinematic = {
+        attach,
+        stop,
+        applySettings(s) {
+            cineSettings = s;
+            if (!canvas) return;
+            canvas.style.filter = buildCineFilter(s);
+            if (parseFloat(canvas.style.opacity) > 0) {
+                canvas.style.opacity = getCineDim(s);
+            }
+        }
+    };
 })();
+
 
 if (isCtxValid()) chrome.storage.local.get(['masterEnabled', 'theme', 'premium', 'ambient', 'cinematic', 'speed', 'autoscroll', 'download', 'autoResume'], (result) => {
     if (result.masterEnabled === false) return;
@@ -1039,6 +1223,8 @@ if (isCtxValid()) chrome.runtime.onMessage.addListener((request, sender, sendRes
     } else if (request.action === 'togglecinematic') {
         document.body.classList.toggle('yt-pro-cinematic', request.state);
         if (request.state) { window._ytProCinematic?.attach(); } else { window._ytProCinematic?.stop(); }
+    } else if (request.action === 'cinematicSettingsChanged') {
+        window._ytProCinematic?.applySettings(request.settings);
     } else if (request.action === 'toggledownload') {
         request.state ? initDownloadIntercept() : removeDownloadIntercept();
     } else if (request.action === 'toggleautoResume') {

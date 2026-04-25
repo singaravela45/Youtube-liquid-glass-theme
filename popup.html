@@ -25,7 +25,16 @@
             background: var(--bg);
             color: #fff;
             overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: hidden;
             height: auto;
+            scrollbar-width: none;
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            width: 0;
         }
 
         body.disabled-mode .settings-wrapper,
@@ -159,6 +168,125 @@
         }
         #info-tooltip-box strong { color: rgba(255,180,60,0.95); display: block; margin-bottom: 4px; font-size: 11px; font-style: normal; }
         #info-tooltip-box span#info-tooltip-body { font-size: 10.5px; line-height: 1.6; color: rgba(255,255,255,0.8); }
+
+        /* ── Cinematic Mode Disclaimer Modal ─────────────────────────── */
+        #cinematic-disclaimer-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.78);
+            z-index: 999999;
+            display: none;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        #cinematic-disclaimer-modal {
+            background: linear-gradient(160deg, #1e1c2e, #141320);
+            border: 1px solid rgba(255,200,0,0.28);
+            border-radius: 18px;
+            padding: 24px 20px 20px;
+            width: 100%; max-width: 288px;
+            text-align: center;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,200,0,0.08);
+            animation: cinemaModalIn 0.22s cubic-bezier(0.34,1.36,0.64,1) forwards;
+        }
+        @keyframes cinemaModalIn {
+            from { transform: scale(0.88); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+        .cinematic-modal-icon { font-size: 38px; line-height: 1; margin-bottom: 10px; }
+        .cinematic-modal-title {
+            font-size: 14px; font-weight: 800;
+            margin: 0 0 14px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .cinematic-modal-body {
+            font-size: 11.5px; color: rgba(255,255,255,0.68);
+            line-height: 1.65; text-align: left; margin-bottom: 18px;
+        }
+        .cinematic-modal-body p { margin: 0 0 9px; }
+        .cinematic-modal-body p:last-child { margin-bottom: 0; }
+        .cinematic-modal-body strong { color: rgba(255,255,255,0.92); }
+        .cinematic-modal-body em {
+            color: rgba(255,200,80,0.95); font-style: normal; font-weight: 600;
+        }
+        #cinematic-confirm-btn {
+            width: 100%; padding: 11px 16px; margin-bottom: 9px;
+            background: linear-gradient(135deg, #ffd700, #f5a623);
+            border: none; border-radius: 11px;
+            color: #1a0d00; font-size: 12.5px; font-weight: 800;
+            cursor: pointer; letter-spacing: 0.2px;
+            box-shadow: 0 4px 18px rgba(255,200,0,0.38);
+            transition: all 0.2s ease;
+        }
+        #cinematic-confirm-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 7px 24px rgba(255,200,0,0.55);
+        }
+        #cinematic-confirm-btn:active { transform: translateY(0); }
+        #cinematic-cancel-btn {
+            width: 100%; padding: 9px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 11px;
+            color: rgba(255,255,255,0.48); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        #cinematic-cancel-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.75);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        /* ── Cinematic Sub-Controls (blur / sat / dim chips) ──────────── */
+        .cine-controls {
+            display: none;
+            flex-direction: column;
+            gap: 3px;
+            padding: 5px 0 4px 32px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            margin-top: 1px;
+        }
+        .cine-controls.visible { display: flex; }
+        .cine-ctrl-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cine-ctrl-label {
+            font-size: 9.5px;
+            color: rgba(255,255,255,0.38);
+            width: 26px;
+            flex-shrink: 0;
+            letter-spacing: 0.2px;
+        }
+        .cine-btn-group { display: flex; gap: 3px; }
+        .cine-btn {
+            font-size: 9.5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.42);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            line-height: 1.5;
+            font-family: inherit;
+        }
+        .cine-btn:hover {
+            background: rgba(255,255,255,0.09);
+            color: rgba(255,255,255,0.75);
+            border-color: rgba(255,255,255,0.22);
+        }
+        .cine-btn.active {
+            background: rgba(255,176,32,0.15);
+            border-color: rgba(255,176,32,0.48);
+            color: rgba(255,200,60,1);
+            font-weight: 600;
+        }
 
         /* ── Toggle Switch ────────────────────────────────────────── */
         .switch {
@@ -643,6 +771,32 @@
                     <div class="label-group"><div class="icon-box">🎬</div><span class="label">Cinematic Mode</span><span class="info-btn info-btn--gold" data-tip="cinematic">i</span></div>
                     <label class="switch"><input type="checkbox" id="toggle-cinematic"><span class="slider"></span></label>
                 </div>
+                <div class="cine-controls" id="cine-controls">
+                    <div class="cine-ctrl-row">
+                        <span class="cine-ctrl-label">Blur</span>
+                        <div class="cine-btn-group">
+                            <button class="cine-btn" data-ctrl="blur" data-val="low">Soft</button>
+                            <button class="cine-btn" data-ctrl="blur" data-val="med">Std</button>
+                            <button class="cine-btn" data-ctrl="blur" data-val="high">Strong</button>
+                        </div>
+                    </div>
+                    <div class="cine-ctrl-row">
+                        <span class="cine-ctrl-label">Sat</span>
+                        <div class="cine-btn-group">
+                            <button class="cine-btn" data-ctrl="sat" data-val="low">Low</button>
+                            <button class="cine-btn" data-ctrl="sat" data-val="med">Std</button>
+                            <button class="cine-btn" data-ctrl="sat" data-val="high">Vivid</button>
+                        </div>
+                    </div>
+                    <div class="cine-ctrl-row">
+                        <span class="cine-ctrl-label">Dim</span>
+                        <div class="cine-btn-group">
+                            <button class="cine-btn" data-ctrl="dim" data-val="low">Light</button>
+                            <button class="cine-btn" data-ctrl="dim" data-val="med">Std</button>
+                            <button class="cine-btn" data-ctrl="dim" data-val="high">Dark</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="setting">
                 <div class="setting-row">
@@ -823,6 +977,21 @@
         </a>
         <button id="welcome-use-btn" style="display:none"></button>
         <div class="welcome-divider"></div>
+    </div>
+
+    <!-- ── Cinematic Mode Disclaimer Modal ──────────────────────────────────── -->
+    <div id="cinematic-disclaimer-overlay">
+        <div id="cinematic-disclaimer-modal">
+            <div class="cinematic-modal-icon">🎬</div>
+            <h3 class="cinematic-modal-title">Cinematic Mode — Read Before Enabling</h3>
+            <div class="cinematic-modal-body">
+                <p>Cinematic Mode works in both <strong>Light &amp; Dark</strong> mode on YouTube.</p>
+                <p>⚠️ <strong>Using Dark Mode?</strong> You <em>must</em> turn off <em>Ambient Mode</em> from YouTube's player settings <strong>and</strong> from this extension panel — otherwise Cinematic Mode won't work as expected.</p>
+                <p>Please make sure you've read the above before turning this on.</p>
+            </div>
+            <button id="cinematic-confirm-btn">✅ &nbsp;Ok I understand — Turn on</button>
+            <button id="cinematic-cancel-btn">Cancel</button>
+        </div>
     </div>
 
     <script src="browser-compat.js"></script>

@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const masterToggleBtn = document.getElementById('master-toggle');
 
     // ── Load all settings ───────────────────────────────────────────────────
-    chrome.storage.local.get(['masterEnabled', ...toggles], (result) => {
+    chrome.storage.local.get(['masterEnabled', 'cinematicSettings', ...toggles], (result) => {
         const isMasterEnabled = result.masterEnabled !== false;
         updateMasterUI(isMasterEnabled);
 
@@ -76,12 +76,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         checkDownloadWarning(result.download !== false);
         checkFullscreenHint(result.fullscreen === true);
+
+        // ── Cinematic sub-controls ──────────────────────────────────────────
+        const cineSettings = result.cinematicSettings || { blur: 'med', sat: 'med', dim: 'med' };
+        initCineControls(cineSettings, result.cinematic === true);
     });
 
     // ── Individual toggle listeners ─────────────────────────────────────────
     toggles.forEach(toggle => {
         document.getElementById(`toggle-${toggle}`).addEventListener('change', (e) => {
             const isChecked = e.target.checked;
+
+            // ── Cinematic Mode disclaimer gate ──────────────────────────────
+            if (toggle === 'cinematic' && isChecked) {
+                e.target.checked = false; // revert visually until user confirms
+                showCinematicDisclaimer();
+                return;
+            }
+            if (toggle === 'cinematic' && !isChecked) {
+                setCineControlsVisible(false);
+            }
+            // ────────────────────────────────────────────────────────────────
+
             chrome.storage.local.set({ [toggle]: isChecked });
 
             if (toggle === 'audio') {
@@ -124,6 +140,73 @@ document.addEventListener('DOMContentLoaded', () => {
         const warning = document.getElementById('download-premium-warning');
         if (warning) warning.style.display = isDownloadEnabled ? 'flex' : 'none';
     }
+
+    // ── Cinematic Mode Disclaimer ────────────────────────────────────────────
+    function showCinematicDisclaimer() {
+        const overlay = document.getElementById('cinematic-disclaimer-overlay');
+        if (overlay) overlay.style.display = 'flex';
+    }
+
+    function hideCinematicDisclaimer() {
+        const overlay = document.getElementById('cinematic-disclaimer-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    document.getElementById('cinematic-confirm-btn').addEventListener('click', () => {
+        const cinematicToggle = document.getElementById('toggle-cinematic');
+        cinematicToggle.checked = true;
+        chrome.storage.local.set({ cinematic: true });
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { action: 'togglecinematic', state: true });
+        });
+        setCineControlsVisible(true);
+        hideCinematicDisclaimer();
+    });
+
+    document.getElementById('cinematic-cancel-btn').addEventListener('click', () => {
+        hideCinematicDisclaimer();
+    });
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── Cinematic Sub-Controls ───────────────────────────────────────────────
+    function setCineControlsVisible(visible) {
+        const panel = document.getElementById('cine-controls');
+        if (panel) panel.classList.toggle('visible', visible);
+    }
+
+    function initCineControls(settings, cinematicOn) {
+        setCineControlsVisible(cinematicOn);
+
+        // Mark the active button in each group
+        ['blur', 'sat', 'dim'].forEach(ctrl => {
+            document.querySelectorAll(`.cine-btn[data-ctrl="${ctrl}"]`).forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.val === (settings[ctrl] || 'med'));
+            });
+        });
+
+        // Click handler for each chip button
+        document.querySelectorAll('.cine-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const ctrl = btn.dataset.ctrl;
+                const val  = btn.dataset.val;
+
+                // Update active state visually
+                document.querySelectorAll(`.cine-btn[data-ctrl="${ctrl}"]`).forEach(b => {
+                    b.classList.toggle('active', b === btn);
+                });
+
+                // Persist and broadcast
+                chrome.storage.local.get('cinematicSettings', r => {
+                    const updated = Object.assign({ blur: 'med', sat: 'med', dim: 'med' }, r.cinematicSettings, { [ctrl]: val });
+                    chrome.storage.local.set({ cinematicSettings: updated });
+                    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                        if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { action: 'cinematicSettingsChanged', settings: updated });
+                    });
+                });
+            });
+        });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
 
 
@@ -594,7 +677,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         cinematic: {
             title: '🎬 Cinematic Mode',
-            body:  'This feature works in both light mode and dark mode. However, in dark mode it will only work if you have Super Ambient Mode turned on. ⚠️ Only enable this in dark mode if you have proper system resources — it uses extra GPU.'
+            body:  'This feature works in both Light & Dark mode of YouTube. ⚠️ However, if you want to use this Cinematic Feature in Dark mode then you have to turn off the Ambient Mode from YouTube player settings and also from the extension panel.'
         }
     };
 
