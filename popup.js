@@ -22,6 +22,24 @@
         starBtn.addEventListener('click', () => {
             chrome.storage.local.set({ hasSeenWelcome: true });
         });
+
+        // Fix: coffee button also dismisses the welcome screen
+        const coffeeBtn = document.getElementById('welcome-coffee-btn');
+        if (coffeeBtn) {
+            coffeeBtn.addEventListener('click', () => {
+                chrome.storage.local.set({ hasSeenWelcome: true });
+            });
+        }
+
+        // Show Skip button after 5 seconds
+        setTimeout(() => {
+            useBtn.textContent = 'No thanks, take me to the extension';
+            useBtn.style.display = 'flex';
+            useBtn.addEventListener('click', () => {
+                chrome.storage.local.set({ hasSeenWelcome: true });
+                showMainUI();
+            });
+        }, 5000);
     });
 })();
 
