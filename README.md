@@ -35,7 +35,7 @@
 ## 🎥 Watch it in Action
 Click the image below to watch the full showcase and installation guide on YouTube:
 
-[![YouTube Pro Plus Showcase](https://img.youtube.com/vi/cHCqhWl-Dwk/maxresdefault.jpg)][https://www.youtube.com/watch?v=cHCqhWl-Dwk](https://youtu.be/pFFhEj73gS0)
+[![YouTube Pro Plus Showcase](https://img.youtube.com/vi/pFFhEj73gS0/maxresdefault.jpg)](https://youtu.be/pFFhEj73gS0)
 
 ---
 
